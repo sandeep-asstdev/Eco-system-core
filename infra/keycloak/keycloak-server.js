@@ -2,9 +2,26 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import url from 'url';
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import url, { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+let PrismaClient;
+try {
+  ({ PrismaClient } = require('@prisma/client'));
+} catch (e) {
+  ({ PrismaClient } = require(path.resolve(__dirname, '../../ecosystem-core/backend/node_modules/@prisma/client')));
+}
+
+let bcrypt;
+try {
+  bcrypt = require('bcryptjs');
+} catch (e) {
+  bcrypt = require(path.resolve(__dirname, '../../ecosystem-core/backend/node_modules/bcryptjs'));
+}
 
 const PORT = 8080;
 const REALM = 'automobile-ecosystem';
@@ -12,7 +29,7 @@ const ISSUER = `http://localhost:${PORT}/realms/${REALM}`;
 const KEY_ID = 'ecosystem-key-2026';
 
 // Persistent RSA Keys
-const KEYS_DIR = path.resolve('infra/keycloak/keys');
+const KEYS_DIR = path.join(__dirname, 'keys');
 if (!fs.existsSync(KEYS_DIR)) {
   fs.mkdirSync(KEYS_DIR, { recursive: true });
 }
@@ -568,6 +585,15 @@ const server = http.createServer(async (req, res) => {
 
   res.writeHead(404, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ error: 'Not found' }));
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`🔐 [KEYCLOAK_OIDC] Port ${PORT} is already in use by active instance. Proceeding with active instance.`);
+    process.exit(0);
+  } else {
+    throw err;
+  }
 });
 
 server.listen(PORT, () => {

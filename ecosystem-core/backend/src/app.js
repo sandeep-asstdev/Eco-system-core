@@ -13,6 +13,7 @@ import applicationRoutes from './modules/applications/applications.routes.js';
 import syncRoutes from './modules/sync/sync.routes.js';
 import integrationRoutes from './modules/integrations/integrations.routes.js';
 import workflowRoutes from './modules/workflows/workflow.routes.js';
+import auditRoutes from './modules/audit/audit.routes.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/v1/applications', applicationRoutes);
 app.use('/api/v1/sync', syncRoutes);
 app.use('/api/v1/integrations', integrationRoutes);
 app.use('/api/v1/workflows', workflowRoutes);
+app.use('/api/v1/audit', auditRoutes);
 
 // 404 Not Found Handler
 app.use((req, res) => {
