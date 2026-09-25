@@ -62,18 +62,15 @@ export default function Dashboard({ onNavigate }) {
     loadDashboardData();
   }, [tenant]);
 
-  const handleLaunch = async (app) => {
-    if (user?.email) {
-      try {
-        await fetch('http://localhost:8080/realms/automobile-ecosystem/protocol/openid-connect/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ email: user.email })
-        });
-      } catch (err) {
-        console.warn('[SSO] Pre-launch session sync warning:', err);
-      }
+  const handleLaunch = (app, e) => {
+    if (e) e.preventDefault();
+    const token = localStorage.getItem('ecosystem_token');
+    const targetKey = (app.appKey || app.code || '').toLowerCase();
+    if (token && (targetKey === 'hrflow' || targetKey === 'maintly')) {
+      const ssoUrl = `http://localhost:8080/realms/automobile-ecosystem/protocol/openid-connect/sso-launch?appKey=${targetKey}&token=${encodeURIComponent(token)}`;
+      window.open(ssoUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      window.open(app.baseUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -230,16 +227,14 @@ export default function Dashboard({ onNavigate }) {
                   <div className="text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 font-medium flex items-center gap-1">
                     <span>🔐 Central SSO Active</span>
                   </div>
-                  <a
-                    href={app.baseUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => handleLaunch(app)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"
+                  <button
+                    type="button"
+                    onClick={(e) => handleLaunch(app, e)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition cursor-pointer"
                   >
                     <span>Launch</span>
                     <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
+                  </button>
                 </div>
               </div>
             );

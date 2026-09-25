@@ -83,18 +83,15 @@ export default function AppLauncher() {
     loadAuthorizedApps();
   }, [tenant, user]);
 
-  const handleLaunch = async (app) => {
-    if (user?.email) {
-      try {
-        await fetch('http://localhost:8080/realms/automobile-ecosystem/protocol/openid-connect/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ email: user.email })
-        });
-      } catch (err) {
-        console.warn('[SSO] Pre-launch session sync warning:', err);
-      }
+  const handleLaunch = (app, e) => {
+    if (e) e.preventDefault();
+    const token = localStorage.getItem('ecosystem_token');
+    const targetKey = (app.appKey || app.code || '').toLowerCase();
+    if (token && (targetKey === 'hrflow' || targetKey === 'maintly')) {
+      const ssoUrl = `http://localhost:8080/realms/automobile-ecosystem/protocol/openid-connect/sso-launch?appKey=${targetKey}&token=${encodeURIComponent(token)}`;
+      window.open(ssoUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      window.open(app.baseUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -207,12 +204,10 @@ export default function AppLauncher() {
                     Target: {app.baseUrl}
                   </div>
 
-                  <a
-                    href={app.baseUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => handleLaunch(app)}
-                    className={`inline-flex items-center gap-2 px-4 py-2 text-white font-semibold text-xs rounded-xl shadow-sm transition ${
+                  <button
+                    type="button"
+                    onClick={(e) => handleLaunch(app, e)}
+                    className={`inline-flex items-center gap-2 px-4 py-2 text-white font-semibold text-xs rounded-xl shadow-sm transition cursor-pointer ${
                       isMaintenance 
                         ? 'bg-amber-600 hover:bg-amber-700' 
                         : 'bg-blue-600 hover:bg-blue-700'
@@ -220,7 +215,7 @@ export default function AppLauncher() {
                   >
                     <span>Launch Application</span>
                     <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
+                  </button>
                 </div>
               </div>
             );

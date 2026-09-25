@@ -23,6 +23,13 @@ try {
   bcrypt = require(path.resolve(__dirname, '../../ecosystem-core/backend/node_modules/bcryptjs'));
 }
 
+let jwt;
+try {
+  jwt = require('jsonwebtoken');
+} catch (e) {
+  jwt = require(path.resolve(__dirname, '../../ecosystem-core/backend/node_modules/jsonwebtoken'));
+}
+
 const PORT = 8080;
 const REALM = 'automobile-ecosystem';
 const ISSUER = `http://localhost:${PORT}/realms/${REALM}`;
@@ -594,6 +601,105 @@ const server = http.createServer(async (req, res) => {
       'Set-Cookie': `KEYCLOAK_SESSION=${sessionId}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`
     });
     res.end(JSON.stringify({ success: true, sessionId }));
+    return;
+  }
+
+  // 5.6. SSO Launch Endpoint (Central Portal 1-Click Launch Bridge)
+  if (pathname === `/realms/${REALM}/protocol/openid-connect/sso-launch` && req.method === 'GET') {
+    const { appKey, token } = parsedUrl.query;
+    if (!token) {
+      res.writeHead(400, { 'Content-Type': 'text/html' });
+      res.end('<h3>SSO Launch Error: Missing authentication token.</h3>');
+      return;
+    }
+
+    let decoded = null;
+    try {
+      decoded = jwt.decode(token);
+    } catch (e) {
+      res.writeHead(400, { 'Content-Type': 'text/html' });
+      res.end('<h3>SSO Launch Error: Invalid authentication token.</h3>');
+      return;
+    }
+
+    if (!decoded || (!decoded.userId && !decoded.sub && !decoded.email)) {
+      res.writeHead(401, { 'Content-Type': 'text/html' });
+      res.end('<h3>SSO Launch Error: Malformed token payload.</h3>');
+      return;
+    }
+
+    const email = (decoded.email || '').toLowerCase().trim();
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { id: decoded.userId || decoded.sub }
+        ]
+      },
+      include: {
+        userRoleAssignments: { include: { role: { include: { rolePermissions: { include: { permission: true } } } } } },
+        memberships: { include: { branch: true, department: true } },
+        tenant: true
+      }
+    });
+
+    if (!user || user.status === 'SUSPENDED') {
+      res.writeHead(403, { 'Content-Type': 'text/html' });
+      res.end('<h3>SSO Launch Error: User account is inactive or suspended.</h3>');
+      return;
+    }
+
+    // Determine target client and redirect URI
+    let targetClientId = 'hrflow-web';
+    let targetRedirectUri = 'http://localhost:3001/callback';
+
+    const normalizedKey = (appKey || '').toLowerCase();
+    if (normalizedKey === 'maintly') {
+      targetClientId = 'maintly-web';
+      targetRedirectUri = 'http://localhost:3002/callback';
+    } else if (normalizedKey === 'hrflow') {
+      targetClientId = 'hrflow-web';
+      targetRedirectUri = 'http://localhost:3001/callback';
+    } else {
+      const app = await prisma.application.findFirst({
+        where: {
+          OR: [{ appKey: normalizedKey }, { code: normalizedKey.toUpperCase() }]
+        }
+      });
+      if (app) {
+        targetClientId = `${app.appKey}-web`;
+        targetRedirectUri = `${app.baseUrl}/callback`;
+      }
+    }
+
+    // Generate authorization code for this client
+    const code = crypto.randomBytes(32).toString('hex');
+    authCodes.set(code, {
+      code,
+      user,
+      clientId: targetClientId,
+      redirectUri: targetRedirectUri,
+      scope: 'openid profile email',
+      expiresAt: Date.now() + 5 * 60 * 1000
+    });
+
+    // Create / Refresh active session
+    const sessionId = crypto.randomUUID();
+    activeSessions.set(sessionId, {
+      sessionId,
+      user,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 24 * 3600 * 1000
+    });
+
+    const targetUrl = new URL(targetRedirectUri);
+    targetUrl.searchParams.set('code', code);
+
+    res.writeHead(302, {
+      Location: targetUrl.toString(),
+      'Set-Cookie': `KEYCLOAK_SESSION=${sessionId}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`
+    });
+    res.end();
     return;
   }
 
