@@ -425,3 +425,172 @@ All employee synchronization events published to `automobile.events.topic` adher
 - `POST /api/v1/sync/retry-failed`: Central trigger for re-publishing failed outbox events.
 - `POST /api/v1/sync/replay-dlq`: Central trigger for replaying dead-lettered messages.
 
+---
+
+## 6. Phase 8 Extensibility Contracts
+
+### 6.1 Dynamic Application Registry (`/api/v1/applications`)
+
+#### `GET /api/v1/applications`
+Lists all registered platform applications with filtering by category or status.
+- **Request Headers**: `Authorization: Bearer <token>`
+- **Response 200 OK**:
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "app-demo-01",
+        "appKey": "demo-app",
+        "code": "DEMO",
+        "name": "Demo Reference Application",
+        "category": "OPERATIONS",
+        "baseUrl": "http://localhost:5005",
+        "apiUrl": "http://localhost:5005",
+        "apiVersion": "v1",
+        "capabilities": ["orders.view", "orders.create"],
+        "requiredPermissions": ["demo.order.view"],
+        "supportedEvents": ["demo.item.created"],
+        "status": "ACTIVE"
+      }
+    ]
+  }
+  ```
+
+#### `POST /api/v1/applications`
+Registers a new application into the ecosystem catalog dynamically.
+- **Authorization**: `PLATFORM_ADMIN`
+- **Request Body**:
+  ```json
+  {
+    "appKey": "billing-app",
+    "code": "BILLING",
+    "name": "Vehicle Billing & Delivery",
+    "category": "SALES",
+    "baseUrl": "http://localhost:5006",
+    "apiUrl": "http://localhost:5006",
+    "apiVersion": "v1",
+    "capabilities": ["invoices.generate", "gatepass.create"],
+    "requiredPermissions": ["billing.invoice.create"],
+    "supportedEvents": ["billing.invoice.issued"],
+    "status": "ACTIVE"
+  }
+  ```
+
+#### `GET /api/v1/applications/user-launcher`
+Returns applications available specifically to the authenticated user based on active tenant subscriptions and user RBAC permissions.
+- **Request Headers**: `Authorization: Bearer <token>`
+- **Response 200 OK**: Array of application objects with resolved target URLs and icons.
+
+#### `POST /api/v1/applications/:id/subscribe`
+Entitles a tenant to access an application.
+- **Request Body**: `{ "tenantId": "883663e1-917e-4fae-8f1d-9d89e749362b", "plan": "ENTERPRISE" }`
+
+#### `POST /api/v1/applications/:id/unsubscribe`
+Revokes tenant entitlement to an application.
+- **Request Body**: `{ "tenantId": "883663e1-917e-4fae-8f1d-9d89e749362b" }`
+
+---
+
+### 6.2 Provider-Independent Integration Hub (`/api/v1/integrations`)
+
+#### `GET /api/v1/integrations/providers`
+Returns catalog of integration adapters (e.g. `CUSTOM_REST`, `WEBHOOK`, `REALBOOK`, `TALLY`).
+
+#### `POST /api/v1/integrations/tenants/:tenantId`
+Configures a tenant-specific integration with AES-256-GCM encrypted credentials.
+- **Request Body**:
+  ```json
+  {
+    "providerCode": "REALBOOK",
+    "credentials": {
+      "apiKey": "realbook_live_key_998811",
+      "companyCode": "BELLAD_MOTORS_HUB"
+    },
+    "fieldMappings": {
+      "customerName": "party_name",
+      "invoiceTotal": "gross_amount",
+      "taxAmount": "total_gst"
+    },
+    "syncSchedule": "0 */4 * * *"
+  }
+  ```
+
+#### `POST /api/v1/integrations/tenants/:tenantId/providers/:providerCode/sync`
+Executes an on-demand sync batch, applying declarative field mappings and recording telemetry in `IntegrationSyncLog`.
+
+---
+
+### 6.3 Configurable Workflow Engine (`/api/v1/workflows`)
+
+#### `POST /api/v1/workflows/definitions`
+Creates a versioned workflow definition supporting declarative conditions and multi-stage approvals.
+- **Request Body**:
+  ```json
+  {
+    "workflowCode": "PURCHASE_ORDER_APPROVAL",
+    "name": "Dealership PO Multi-Stage Approval",
+    "triggerEvent": "purchase.order.requested",
+    "conditions": {
+      "and": [
+        { "field": "amount", "operator": "gte", "value": 50000 }
+      ]
+    },
+    "stages": [
+      { "stageIndex": 0, "role": "BRANCH_MANAGER", "name": "Branch GM Approval" },
+      { "stageIndex": 1, "role": "TENANT_ADMIN", "name": "Finance MD Approval" }
+    ]
+  }
+  ```
+
+#### `POST /api/v1/workflows/trigger`
+Triggers workflow evaluation against an incoming domain event or entity action without executing arbitrary code.
+- **Request Body**:
+  ```json
+  {
+    "triggerEvent": "purchase.order.requested",
+    "entityType": "PurchaseOrder",
+    "entityId": "po-99120",
+    "contextData": {
+      "amount": 75000,
+      "vendor": "Bosch Components",
+      "branchCode": "HUB"
+    }
+  }
+  ```
+
+#### `POST /api/v1/workflows/instances/:id/action`
+Submits an approval or rejection on the active stage. Enforces that the caller holds the required role for that stage.
+- **Request Body**:
+  ```json
+  {
+    "decision": "APPROVED",
+    "comments": "Verified and approved for procurement."
+  }
+  ```
+
+---
+
+### 6.4 Versioned Cross-App Event Envelope
+All asynchronous domain events conform to standard envelope:
+```json
+{
+  "eventId": "evt-7721-a4b9-1234",
+  "version": "1.0.0",
+  "eventType": "demo.item.created",
+  "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+  "payload": {
+    "itemId": "item-9918",
+    "name": "Diagnostic Brake Tester",
+    "category": "WORKSHOP_EQUIPMENT",
+    "serialNumber": "SN-982104"
+  },
+  "metadata": {
+    "publisher": "demo-app",
+    "correlationId": "corr-1192-3849",
+    "timestamp": "2026-09-25T11:00:00.000Z"
+  }
+}
+```
+
+

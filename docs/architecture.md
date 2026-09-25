@@ -280,4 +280,85 @@ The ecosystem implements **Shared Database, Shared Schema with Logical Multi-Ten
 5. **Historical Integrity & Maintenance Preservation**:
    - Employee deactivation sets `EmployeeReference.status = 'INACTIVE'`. Records are never deleted, ensuring historical maintenance tickets, equipment logs, and purchase requisitions remain fully linked and auditable.
 
+---
+
+## 9. Phase 8 — Modular, Extensible Platform Architecture
+
+Phase 8 elevates the Automobile Dealership Ecosystem from a static two-application portal into a modular, plug-and-play enterprise platform. Future applications (Vehicle Billing, Enquiry CRM, Inventory, Accounting, Purchase) and external systems (Realbook, Tally) can be registered and operated with zero modifications to existing applications like HRFlow or MAINTLY.
+
+```mermaid
+graph TB
+    subgraph Ecosystem Core Platform
+        Registry[Dynamic Application Registry]
+        WorkflowEngine[Configurable Workflow Engine<br/>(Declarative JSON AST, Multi-Stage)]
+        IntegrationHub[Provider-Independent Integration Hub<br/>(AES-256-GCM Encrypted Credentials)]
+        PortalLauncher[Central App Launcher & Gating]
+    end
+
+    subgraph Shared Application SDK (@automobile-ecosystem/sdk)
+        AuthGuard[OIDC RS256 Auth & RBAC Guards]
+        EventBusClient[AMQP / HTTP Topic Event Bus]
+        SchemaContracts[Canonical Schema & Compatibility Validator]
+        HealthCheck[Standardized /health Monitor]
+    end
+
+    subgraph Plug-and-Play Applications
+        DemoApp[DemoApp :5005<br/>SDK-Powered Reference Application]
+        BillingApp[Future: Vehicle Billing & Delivery]
+        CRMApp[Future: Enquiry & Lead CRM]
+        InventoryApp[Future: Parts & Vehicle Inventory]
+    end
+
+    subgraph External Connectors
+        RealbookConn[Realbook Connector Contract<br/>(Financial Sync, Invoices, Vouchers)]
+        TallyConn[Tally Connector Contract]
+        WebhookConn[Outbound Webhooks Engine]
+    end
+
+    PortalLauncher --> Registry
+    DemoApp --> AuthGuard
+    DemoApp --> EventBusClient
+    BillingApp -.-> Shared Application SDK
+    IntegrationHub --> RealbookConn
+    IntegrationHub --> TallyConn
+    IntegrationHub --> WebhookConn
+    WorkflowEngine --> Registry
+```
+
+### 9.1 Dynamic Application Registry
+- **Database-Driven Catalog**: Applications are stored dynamically in the `Application` table with fields: `appKey`, `code`, `name`, `category`, `baseUrl`, `apiUrl`, `apiVersion`, `capabilities`, `requiredPermissions`, `supportedEvents`, `webhooks`, and `status` (`ACTIVE`, `MAINTENANCE`, `SUSPENDED`).
+- **Tenant Entitlement Gating**: Tenants subscribe to applications via the `TenantApplication` join table. The central portal app launcher renders solely the applications subscribed to and active for the user's specific dealership tenant (`/api/v1/applications/user-launcher`).
+- **Administrative Lifecycle APIs**: Platform superadministrators can register (`POST /api/v1/applications`), update status (`PATCH /api/v1/applications/:id`), query health (`GET /api/v1/applications/:id/health`), and manage tenant subscriptions (`POST /api/v1/applications/:id/subscribe`) with zero code deploys.
+
+### 9.2 Shared Application SDK (`@automobile-ecosystem/sdk`)
+To prevent duplicated authentication logic, disparate error models, and tight coupling, future applications consume the `@automobile-ecosystem/sdk` package containing:
+1. `authMiddleware`: Express middleware verifying Keycloak RS256 JWT tokens, caching JWKS public keys, validating `x-internal-service-key`, and populating `req.user`, `req.tenantId`, and `req.permissions`.
+2. `rbacMiddleware`: Declarative route guards (`requirePermission`, `requireRole`, `requireTenant`, `requireScope`) for fine-grained authorization.
+3. `eventBus`: Asynchronous messaging client publishing versioned events to the `automobile.events.topic` exchange and subscribing consumers with automatic dead-letter queue routing.
+4. `ecosystemClient`: Standardized HTTP client for querying core metadata (tenants, branches, brands, users) and recording centralized audit logs.
+5. `schemaRegistry` & `eventContracts`: Central definition of canonical entity identifiers (`centralTenantId`, `vin`, `centralBranchId`) and JSON Schema backward compatibility validation.
+6. `cryptoUtils`: AES-256-GCM cipher encryption and decryption utilities for sensitive credentials.
+7. `healthHandler`: Standardized `/health` endpoint reporting uptime, memory metrics, and subsystem dependencies.
+
+### 9.3 Provider-Independent Integration Hub
+- **Provider Catalog**: Declarative registration of integration adapters (`IntegrationProvider`): REST APIs, webhooks, scheduled sync, and event-driven data flows.
+- **Tenant-Specific Integration Credentials**: Dealership-specific credentials stored in `TenantIntegration`, encrypted at rest using AES-256-GCM. Unencrypted secrets are never exposed to frontends.
+- **Declarative Field Mapping Engine**: Maps source record structures to destination schemas without code changes, supporting path resolution (`a.b.c`), transformations (uppercase, lowercase, trimming), and type casting.
+- **Realbook Connector Interface**: Standardized specification (`RealbookConnector`) defining authentication, invoice sync, journal voucher posting, and ledger synchronization without inventing unverified endpoints.
+
+### 9.4 Configurable Zero-Code Workflow Engine
+- **Declarative JSON Logic AST**: Strict zero-eval rule execution engine supporting logical operators (`AND`, `OR`, `NOT`) and relational comparisons (`eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `contains`). Code execution via `eval()` or `Function()` is strictly prohibited.
+- **Dealership-Specific Multi-Stage Approvals**: Resolves dealership-specific workflow definitions first (`tenantId = currentTenant`), falling back to global definitions (`tenantId = null`). For instance, Dealer A can require 2 approval stages for purchase orders, while Dealer B requires 4 approval stages.
+- **Immutable Audit Trail**: Every stage decision, comment, author, and timestamp is immutably logged in `WorkflowStageExecution`.
+
+### 9.5 DemoApp Reference Application
+Located at `applications/DemoApp` (Port 5005), `DemoApp` is a standalone PERN application built entirely with `@automobile-ecosystem/sdk`. It proves:
+1. Dynamic registration in the ecosystem application registry.
+2. Central SSO and multi-tenant context extraction.
+3. Permission enforcement (`demo.order.view`, `demo.order.create`).
+4. Cross-app versioned event publishing (`demo.item.created` v1.0.0) and domain event consumption (`employee.created`).
+5. Tenant entitlement gating: Subscribed and visible for Bellad Group (`BELLAD`), unsubscribed and hidden for Apex Auto Group (`APEX`).
+6. Absolute zero regressions on existing HRFlow and MAINTLY modules.
+
+
 

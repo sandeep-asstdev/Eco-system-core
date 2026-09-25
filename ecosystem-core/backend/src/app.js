@@ -11,6 +11,8 @@ import orgRoutes from './modules/org/org.routes.js';
 import userRoutes from './modules/users/users.routes.js';
 import applicationRoutes from './modules/applications/applications.routes.js';
 import syncRoutes from './modules/sync/sync.routes.js';
+import integrationRoutes from './modules/integrations/integrations.routes.js';
+import workflowRoutes from './modules/workflows/workflow.routes.js';
 
 const app = express();
 
@@ -33,6 +35,8 @@ app.use('/api/v1/org', orgRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/applications', applicationRoutes);
 app.use('/api/v1/sync', syncRoutes);
+app.use('/api/v1/integrations', integrationRoutes);
+app.use('/api/v1/workflows', workflowRoutes);
 
 // 404 Not Found Handler
 app.use((req, res) => {

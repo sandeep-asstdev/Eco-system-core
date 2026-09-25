@@ -319,4 +319,120 @@ model ProcessedEvent {
   - `POST /api/v1/sync/initial-sync`: Triggers repeatable initial synchronization across all tenants.
 - **Ecosystem Portal**: Built `SyncMonitor.jsx` rendered at `/sync-monitor` with real-time stats, alert banners, event payload inspector, and administrative action triggers.
 
+---
+
+## 9. Phase 8 SDK Integration Guide for Future PERN Applications
+
+To introduce new applications (e.g., Vehicle Billing, Inventory, CRM, Accounting) into the Automobile Dealership Ecosystem with zero changes to existing apps, follow this standardized blueprint using `@automobile-ecosystem/sdk`.
+
+### 9.1 SDK Installation
+```bash
+npm install file:../../packages/ecosystem-sdk
+```
+
+### 9.2 Central Authentication & RBAC Middleware Setup
+```javascript
+import express from 'express';
+import {
+  createAuthMiddleware,
+  requirePermission,
+  requireTenant,
+  createHealthHandler,
+  errorHandler
+} from '@automobile-ecosystem/sdk';
+
+const app = express();
+app.use(express.json());
+
+// 1. Mount Central OIDC RS256 Authentication
+const authMiddleware = createAuthMiddleware({
+  jwksUri: process.env.KEYCLOAK_JWKS_URI || 'http://localhost:8080/realms/automobile-ecosystem/protocol/openid-connect/certs',
+  issuer: process.env.KEYCLOAK_ISSUER || 'http://localhost:8080/realms/automobile-ecosystem',
+  internalServiceKey: process.env.INTERNAL_SERVICE_KEY || 'ecosystem-internal-service-sync-key'
+});
+app.use(authMiddleware);
+
+// 2. Health Monitoring Endpoint
+app.get('/api/health', createHealthHandler({
+  serviceName: 'vehicle-billing',
+  version: '1.0.0'
+}));
+
+// 3. Protected Domain Endpoints with Declarative RBAC
+app.post('/api/invoices',
+  requireTenant(),
+  requirePermission('billing.invoice.create'),
+  async (req, res) => {
+    // req.user, req.tenantId, req.permissions are populated by SDK
+    res.status(201).json({ success: true, message: 'Invoice created' });
+  }
+);
+
+app.use(errorHandler);
+```
+
+### 9.3 Asynchronous Domain Event Publishing & Subscription
+```javascript
+import { createEventBus, CANONICAL_IDENTIFIERS } from '@automobile-ecosystem/sdk';
+
+const eventBus = createEventBus({
+  amqpUrl: process.env.RABBITMQ_URL || 'amqp://localhost:5672',
+  exchange: 'automobile.events.topic',
+  serviceName: 'vehicle-billing'
+});
+
+await eventBus.connect();
+
+// Publishing a Versioned Domain Event
+await eventBus.publish('billing.invoice.created', {
+  invoiceId: 'inv-2026-001',
+  [CANONICAL_IDENTIFIERS.TENANT]: req.tenantId,
+  [CANONICAL_IDENTIFIERS.BRANCH]: req.user.primaryBranchId,
+  [CANONICAL_IDENTIFIERS.VEHICLE]: 'VIN-MAH-99281',
+  amount: 1450000,
+  taxGst: 261000
+}, { version: '1.0.0' });
+
+// Consuming Cross-Domain Events (e.g. Employee updates from HRFlow)
+await eventBus.subscribe({
+  queueName: 'billing.employee.sync',
+  bindingKey: 'employee.*',
+  handler: async (event) => {
+    console.log(`Received employee event: ${event.eventType} for ${event.payload.email}`);
+  }
+});
+```
+
+### 9.4 Dynamic Administrative Registration
+Register the new application via `ecosystem-core` administrative API:
+```bash
+curl -X POST http://localhost:4000/api/v1/applications \
+  -H "Authorization: Bearer <PLATFORM_ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "appKey": "billing",
+    "code": "BILLING",
+    "name": "Vehicle Billing & Invoicing",
+    "category": "FINANCE",
+    "baseUrl": "http://localhost:3004",
+    "apiUrl": "http://localhost:5004",
+    "apiVersion": "v1",
+    "capabilities": ["invoice.generate", "receipt.issue", "gst.e-invoice"],
+    "requiredPermissions": ["billing.invoice.create"],
+    "supportedEvents": ["billing.invoice.created"],
+    "status": "ACTIVE"
+  }'
+```
+
+### 9.5 DemoApp Reference Architecture
+The reference implementation at `applications/DemoApp` (Port 5005) provides a complete, runnable demonstration of:
+- Standardized startup on port 5005
+- Automatic dynamic registration into the ecosystem registry
+- Verification of Bellad Group subscription vs Apex Auto Group unsubscription
+- Event publishing (`demo.item.created` v1.0.0)
+- Event subscription (`employee.created`)
+- Fine-grained permission guards (`demo.order.view`, `demo.order.create`)
+- Zero operational impact on HRFlow and MAINTLY
+
+
 

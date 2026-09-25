@@ -112,3 +112,6 @@ export function checkPermission(requiredPermission, getScope = (req) => ({})) {
     next();
   };
 }
+
+export const requirePermission = checkPermission;
+

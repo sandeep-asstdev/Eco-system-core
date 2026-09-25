@@ -40,10 +40,9 @@ export default function Applications() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {applications.map((app) => {
-            const isHrflow = app.appKey === 'hrflow';
-            const defaultUrl = isHrflow ? 'http://localhost:5173' : 'http://localhost:3002';
-            const defaultApiUrl = isHrflow ? 'http://localhost:5000' : 'http://localhost:5002';
-            const modules = app.settings?.modules || [];
+            const initials = app.code ? app.code.substring(0, 2) : (app.name || 'AP').substring(0, 2).toUpperCase();
+            const category = app.category || 'OPERATIONS';
+            const modules = app.capabilities?.length > 0 ? app.capabilities : (app.settings?.modules || []);
 
             return (
               <div 
@@ -53,14 +52,20 @@ export default function Applications() {
                 <div>
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-base shadow-md ${
-                        isHrflow ? 'bg-indigo-600 shadow-indigo-500/20' : 'bg-blue-600 shadow-blue-500/20'
-                      }`}>
-                        {isHrflow ? 'HR' : 'MT'}
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-base shadow-md bg-blue-600 shadow-blue-500/20">
+                        {initials}
                       </div>
                       <div>
-                        <h2 className="text-base font-bold text-slate-900">{app.name}</h2>
-                        <span className="text-[11px] font-mono text-slate-500">appKey: {app.appKey}</span>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-base font-bold text-slate-900">{app.name}</h2>
+                          <span className="text-[10px] font-mono text-slate-400">v{app.version}</span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[11px] font-mono text-slate-500">code: {app.code || app.appKey}</span>
+                          <span className="text-[10px] font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
+                            {category}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -74,11 +79,11 @@ export default function Applications() {
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-xs text-slate-600 mb-4">
                     <div className="flex items-center justify-between">
                       <span className="text-slate-400">Web URL:</span>
-                      <span className="font-mono text-[11px] text-blue-600">{app.baseUrl || defaultUrl}</span>
+                      <span className="font-mono text-[11px] text-blue-600">{app.baseUrl}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-400">Backend API:</span>
-                      <span className="font-mono text-[11px] text-slate-700">{app.apiUrl || defaultApiUrl}</span>
+                      <span className="font-mono text-[11px] text-slate-700">{app.apiUrl}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-400">Health Check:</span>

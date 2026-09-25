@@ -97,6 +97,10 @@ model Tenant {
   userRoleAssignments UserRoleAssignment[]
   auditLogs           AuditLog[]
   integrationEvents   IntegrationEvent[]
+  tenantIntegrations  TenantIntegration[]
+  webhookSubscriptions WebhookSubscription[]
+  workflowDefinitions WorkflowDefinition[]
+  workflowInstances   WorkflowInstance[]
 
   @@index([code])
   @@index([status])
@@ -309,20 +313,29 @@ model OrganizationMembership {
 // ==========================================
 
 model Application {
-  id             String   @id @default(uuid())
-  appKey         String   @unique // e.g. "hrflow", "maintly", "enquiry-crm", "vehicle-billing"
-  name           String   // e.g. "HRFlow HRMS", "MAINTLY Facility & Maintenance"
-  description    String?
-  icon           String?  @default("AppWindow")
-  baseUrl        String   // e.g. "http://localhost:3001"
-  apiUrl         String   // e.g. "http://localhost:5001"
-  version        String   @default("1.0.0")
-  category       String   @default("OPERATIONS") // HR, OPERATIONS, CRM, FINANCE, INVENTORY
-  healthEndpoint String   @default("/api/health")
-  isActive       Boolean  @default(true)
-  settings       Json?    // Manifest, required permissions, navigation items
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                  String   @id @default(uuid())
+  appKey              String   @unique // e.g. "hrflow", "maintly", "enquiry-crm", "vehicle-billing"
+  code                String?  // Unique standardized app code e.g. "HRFLOW", "MAINTLY", "DEMO_APP"
+  name                String   // e.g. "HRFlow HRMS", "MAINTLY Facility & Maintenance"
+  description         String?
+  icon                String?  @default("AppWindow")
+  baseUrl             String   // e.g. "http://localhost:3001"
+  apiUrl              String   // e.g. "http://localhost:5001"
+  version             String   @default("1.0.0")
+  apiVersion          String   @default("v1")
+  category            String   @default("OPERATIONS") // HR, OPERATIONS, CRM, FINANCE, INVENTORY
+  capabilities        String[] @default([]) // e.g. ["sso", "multi_branch", "webhooks", "offline_sync"]
+  requiredPermissions String[] @default([]) // e.g. ["hr.employee.read"]
+  supportedEvents     String[] @default([]) // e.g. ["employee.created", "employee.updated"]
+  webhooks            Json?    // Supported webhooks config schema
+  status              String   @default("ACTIVE") // ACTIVE, SUSPENDED, MAINTENANCE, INACTIVE
+  isPublic            Boolean  @default(true)
+  availableTiers      String[] @default(["STARTER", "PROFESSIONAL", "ENTERPRISE", "CUSTOM"])
+  healthEndpoint      String   @default("/api/health")
+  isActive            Boolean  @default(true)
+  settings            Json?    // Manifest, theme colors, navigation items
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   tenantApplications TenantApplication[]
   permissions        Permission[]
@@ -504,3 +517,160 @@ model IntegrationEvent {
   @@index([eventType])
   @@map("integration_events")
 }
+
+// ==========================================
+// 17. INTEGRATION HUB (PROVIDERS & ADAPTERS)
+// ==========================================
+
+model IntegrationProvider {
+  id                   String   @id @default(uuid())
+  code                 String   @unique // e.g. "REALBOOK", "TALLY", "CUSTOM_REST", "WEBHOOK"
+  name                 String
+  description          String?
+  providerType         String   // REST, WEBHOOK, ACCOUNTING, DMS
+  authType             String   // API_KEY, OAUTH2, BASIC, BEARER, HMAC
+  configSchema         Json?    // Required parameters and configuration schema
+  defaultFieldMappings Json?    // Suggested canonical field mapping rules
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  tenantIntegrations TenantIntegration[]
+
+  @@map("integration_providers")
+}
+
+model TenantIntegration {
+  id                   String   @id @default(uuid())
+  tenantId             String
+  providerId           String
+  name                 String
+  status               String   @default("ACTIVE") // ACTIVE, INACTIVE, ERROR, PAUSED
+  encryptedCredentials String   // AES-256-GCM encrypted payload
+  iv                   String   // Initialization vector
+  authTag              String   // Authentication tag
+  fieldMappings        Json?    // [{ sourceField, targetField, transform, defaultValue }]
+  syncSchedule         String?  // Cron expression or sync interval
+  lastSyncAt           DateTime?
+  lastSyncStatus       String?  // SUCCESS, FAILED, PARTIAL
+  lastError            String?
+  customConfig         Json?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  tenant   Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  provider IntegrationProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  syncLogs IntegrationSyncLog[]
+
+  @@index([tenantId])
+  @@index([providerId])
+  @@map("tenant_integrations")
+}
+
+model IntegrationSyncLog {
+  id                  String   @id @default(uuid())
+  tenantIntegrationId String
+  direction           String   // INBOUND, OUTBOUND
+  status              String   // SUCCESS, FAILED, PARTIAL
+  recordsProcessed    Int      @default(0)
+  recordsFailed       Int      @default(0)
+  details             Json?
+  errorMessage        String?
+  createdAt           DateTime @default(now())
+
+  tenantIntegration TenantIntegration @relation(fields: [tenantIntegrationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantIntegrationId])
+  @@index([createdAt])
+  @@map("integration_sync_logs")
+}
+
+model WebhookSubscription {
+  id             String    @id @default(uuid())
+  tenantId       String
+  targetUrl      String
+  secretKey      String    // HMAC-SHA256 signing secret
+  events         String[]  // Array of event patterns e.g. ["employee.created", "purchase.*"]
+  isActive       Boolean   @default(true)
+  failureCount   Int       @default(0)
+  lastDeliveryAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("webhook_subscriptions")
+}
+
+// ==========================================
+// 18. CONFIGURABLE WORKFLOW ENGINE
+// ==========================================
+
+model WorkflowDefinition {
+  id           String   @id @default(uuid())
+  tenantId     String?  // Null for global default, set for dealership-specific override
+  code         String   // e.g. "PURCHASE_APPROVAL", "LEAVE_APPROVAL", "DISCOUNT_APPROVAL"
+  name         String
+  version      Int      @default(1)
+  triggerEvent String   // e.g. "purchase.requested", "discount.requested"
+  conditions   Json     // Declarative JSON logic (e.g. { field: "amount", op: ">", value: 50000 })
+  stages       Json     // Array of stages: [{ stageIndex: 0, role: "BRANCH_MANAGER", timeoutHours: 24 }]
+  status       String   @default("ACTIVE") // ACTIVE, DRAFT, ARCHIVED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant    Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  instances WorkflowInstance[]
+
+  @@unique([tenantId, code, version])
+  @@index([tenantId])
+  @@index([code])
+  @@map("workflow_definitions")
+}
+
+model WorkflowInstance {
+  id                   String    @id @default(uuid())
+  tenantId             String
+  workflowDefinitionId String
+  entityType           String    // e.g. "PurchaseOrder", "MaintenanceTicket", "Discount"
+  entityId             String
+  currentStageIndex    Int       @default(0)
+  status               String    @default("PENDING") // PENDING, APPROVED, REJECTED, ESCALATED, CANCELLED
+  contextData          Json      // Business context snapshot
+  initiatedBy          String?   // Initiating user ID
+  completedAt          DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  definition      WorkflowDefinition       @relation(fields: [workflowDefinitionId], references: [id], onDelete: Cascade)
+  tenant          Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  stageExecutions WorkflowStageExecution[]
+
+  @@index([tenantId])
+  @@index([workflowDefinitionId])
+  @@index([entityType, entityId])
+  @@index([status])
+  @@map("workflow_instances")
+}
+
+model WorkflowStageExecution {
+  id             String    @id @default(uuid())
+  instanceId     String
+  stageIndex     Int
+  requiredRole   String    // Role code authorized to approve/reject
+  status         String    @default("PENDING") // PENDING, APPROVED, REJECTED, SKIPPED, TIMEOUT
+  decidedBy      String?   // User ID
+  decidedByEmail String?
+  decision       String?   // APPROVED, REJECTED
+  comments       String?
+  decidedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  instance WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  @@index([instanceId])
+  @@index([status])
+  @@map("workflow_stage_executions")
+}
+

@@ -1,0 +1,26 @@
+{
+  "name": "@automobile-ecosystem/sdk",
+  "version": "1.0.0",
+  "description": "Modular Shared Application SDK for Automobile Ecosystem PERN applications",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/**/*.test.js"
+  },
+  "keywords": [
+    "automobile-ecosystem",
+    "sdk",
+    "pern",
+    "microservices",
+    "sso",
+    "keycloak",
+    "rabbitmq"
+  ],
+  "author": "Automobile Ecosystem Team",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^2.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^4.1.0"
+  }
+}

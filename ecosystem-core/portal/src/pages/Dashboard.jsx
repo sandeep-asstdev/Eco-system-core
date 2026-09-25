@@ -187,8 +187,7 @@ export default function Dashboard({ onNavigate }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {stats.applications.map((app) => {
-            const isHrflow = app.appKey === 'hrflow';
-            const defaultUrl = isHrflow ? 'http://localhost:5173' : 'http://localhost:3002';
+            const initials = app.code ? app.code.substring(0, 2) : (app.name || 'AP').substring(0, 2).toUpperCase();
 
             return (
               <div 
@@ -198,10 +197,8 @@ export default function Dashboard({ onNavigate }) {
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-2.5">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold shadow-sm ${
-                        isHrflow ? 'bg-indigo-600' : 'bg-blue-600'
-                      }`}>
-                        {isHrflow ? 'HR' : 'MT'}
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold shadow-sm bg-blue-600">
+                        {initials}
                       </div>
                       <div>
                         <h3 className="text-sm font-bold text-slate-900 leading-tight">{app.name}</h3>
@@ -215,11 +212,11 @@ export default function Dashboard({ onNavigate }) {
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between">
-                  <div className="text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 font-medium">
-                    ⚠️ Opening requires standalone app login until Phase 5 & 6 SSO
+                  <div className="text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 font-medium flex items-center gap-1">
+                    <span>🔐 Central SSO Active</span>
                   </div>
                   <a
-                    href={app.baseUrl || defaultUrl}
+                    href={app.baseUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"

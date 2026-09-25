@@ -13,6 +13,7 @@
     "test": "node tests/core.test.js && node tests/phase3.test.js && node tests/keycloak.test.js && node tests/portal-integration.test.js"
   },
   "dependencies": {
+    "@automobile-ecosystem/sdk": "file:../../packages/ecosystem-sdk",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
