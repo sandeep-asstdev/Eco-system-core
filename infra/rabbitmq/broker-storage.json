@@ -1,0 +1,1309 @@
+{
+  "messages": [
+    {
+      "id": "4e976746-7fd0-4a46-87b7-43e492a4ecfb",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.created",
+      "content": {
+        "email": "tech.sync-24993@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "4e976746-7fd0-4a46-87b7-43e492a4ecfb",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:35:25.021Z",
+        "department": "Service",
+        "designation": "Senior Diagnostic Technician",
+        "employeeCode": "EMP-1004",
+        "hrEmployeeId": "a9b99af1-9d1d-45e6-8bf4-5f2e1144195d",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790328925022,
+        "persistent": true,
+        "messageId": "4e976746-7fd0-4a46-87b7-43e492a4ecfb",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "a9b99af1-9d1d-45e6-8bf4-5f2e1144195d",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:35:25.532Z"
+    },
+    {
+      "id": "77ddfc9d-6669-4982-934a-c742737b09e4",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "tech.sync-64706@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "77ddfc9d-6669-4982-934a-c742737b09e4",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:37:44.719Z",
+        "department": "Service",
+        "designation": "Senior Diagnostic Technician",
+        "employeeCode": "EMP-1010",
+        "hrEmployeeId": "944a5804-01df-4bcc-a082-d8fea05df307",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329064720,
+        "persistent": true,
+        "messageId": "77ddfc9d-6669-4982-934a-c742737b09e4",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "944a5804-01df-4bcc-a082-d8fea05df307",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:37:45.999Z"
+    },
+    {
+      "id": "f184c1e1-cd3c-442e-88eb-f9d5c81328be",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "tech.sync-64706@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "f184c1e1-cd3c-442e-88eb-f9d5c81328be",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "4592041e-fe7d-473e-89ee-54ebdc630e50"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:37:48.311Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1010",
+        "hrEmployeeId": "944a5804-01df-4bcc-a082-d8fea05df307",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329068312,
+        "persistent": true,
+        "messageId": "f184c1e1-cd3c-442e-88eb-f9d5c81328be",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "944a5804-01df-4bcc-a082-d8fea05df307",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:37:50.013Z"
+    },
+    {
+      "id": "a2be2473-8890-4ec9-8490-0408202704f5",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.transferred",
+      "content": {
+        "email": "tech.sync-64706@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "a2be2473-8890-4ec9-8490-0408202704f5",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "reason": "Promoted to Lead Technician at central workshop",
+          "toBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c",
+          "fromBranchId": "4592041e-fe7d-473e-89ee-54ebdc630e50"
+        },
+        "eventType": "employee.transferred",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:37:51.346Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1010",
+        "hrEmployeeId": "944a5804-01df-4bcc-a082-d8fea05df307",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329071346,
+        "persistent": true,
+        "messageId": "a2be2473-8890-4ec9-8490-0408202704f5",
+        "type": "employee.transferred",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "944a5804-01df-4bcc-a082-d8fea05df307",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:37:52.023Z"
+    },
+    {
+      "id": "106f302d-b271-4fcf-8d8e-9d15496e49f7",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "tech.sync-06328@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "106f302d-b271-4fcf-8d8e-9d15496e49f7",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:41:46.353Z",
+        "department": "Service",
+        "designation": "Senior Diagnostic Technician",
+        "employeeCode": "EMP-1011",
+        "hrEmployeeId": "2eef2d06-837f-4786-981b-dd9f3fcad65d",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329306354,
+        "persistent": true,
+        "messageId": "106f302d-b271-4fcf-8d8e-9d15496e49f7",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "2eef2d06-837f-4786-981b-dd9f3fcad65d",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:41:46.622Z"
+    },
+    {
+      "id": "3aad9fc1-fbca-4e70-958e-1dfb4b6da1da",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "tech.sync-06328@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "3aad9fc1-fbca-4e70-958e-1dfb4b6da1da",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "4592041e-fe7d-473e-89ee-54ebdc630e50"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:41:49.952Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1011",
+        "hrEmployeeId": "2eef2d06-837f-4786-981b-dd9f3fcad65d",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329309953,
+        "persistent": true,
+        "messageId": "3aad9fc1-fbca-4e70-958e-1dfb4b6da1da",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "2eef2d06-837f-4786-981b-dd9f3fcad65d",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:41:50.625Z"
+    },
+    {
+      "id": "344f7cf1-9d4b-44fd-b26b-8c41f2ffcc06",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.transferred",
+      "content": {
+        "email": "tech.sync-06328@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "344f7cf1-9d4b-44fd-b26b-8c41f2ffcc06",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "reason": "Promoted to Lead Technician at central workshop",
+          "toBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c",
+          "fromBranchId": "4592041e-fe7d-473e-89ee-54ebdc630e50"
+        },
+        "eventType": "employee.transferred",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:41:52.977Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1011",
+        "hrEmployeeId": "2eef2d06-837f-4786-981b-dd9f3fcad65d",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329312978,
+        "persistent": true,
+        "messageId": "344f7cf1-9d4b-44fd-b26b-8c41f2ffcc06",
+        "type": "employee.transferred",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "2eef2d06-837f-4786-981b-dd9f3fcad65d",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:41:54.638Z"
+    },
+    {
+      "id": "d83ea0d3-7202-407c-9793-bdb069d575e1",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.deactivated",
+      "content": {
+        "email": "tech.sync-06328@belladgroup.com",
+        "phone": "9999888877",
+        "status": "RESIGNED",
+        "eventId": "d83ea0d3-7202-407c-9793-bdb069d575e1",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "reason": "Sabbatical leave",
+          "previousStatus": "ACTIVE"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:41:56.001Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1011",
+        "hrEmployeeId": "2eef2d06-837f-4786-981b-dd9f3fcad65d",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329316002,
+        "persistent": true,
+        "messageId": "d83ea0d3-7202-407c-9793-bdb069d575e1",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "2eef2d06-837f-4786-981b-dd9f3fcad65d",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:41:56.653Z"
+    },
+    {
+      "id": "d5509e67-06a0-457b-8538-bc36d61fd78a",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.reactivated",
+      "content": {
+        "email": "tech.sync-06328@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "d5509e67-06a0-457b-8538-bc36d61fd78a",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "previousStatus": "RESIGNED"
+        },
+        "eventType": "employee.reactivated",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:41:59.027Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1011",
+        "hrEmployeeId": "2eef2d06-837f-4786-981b-dd9f3fcad65d",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329319028,
+        "persistent": true,
+        "messageId": "d5509e67-06a0-457b-8538-bc36d61fd78a",
+        "type": "employee.reactivated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "2eef2d06-837f-4786-981b-dd9f3fcad65d",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:42:00.672Z"
+    },
+    {
+      "id": "106f302d-b271-4fcf-8d8e-9d15496e49f7",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "tech.sync-06328@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "106f302d-b271-4fcf-8d8e-9d15496e49f7",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:41:46.353Z",
+        "department": "Service",
+        "designation": "Senior Diagnostic Technician",
+        "employeeCode": "EMP-1011",
+        "hrEmployeeId": "2eef2d06-837f-4786-981b-dd9f3fcad65d",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329322040,
+        "persistent": true,
+        "messageId": "106f302d-b271-4fcf-8d8e-9d15496e49f7"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:42:02.040Z"
+    },
+    {
+      "id": "stale-1790329324558",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "tech.sync-06328@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "stale-1790329324558",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2021-01-01T00:00:00.000Z",
+        "department": "Service",
+        "designation": "Outdated Stale 2021 Title",
+        "employeeCode": "EMP-1011",
+        "hrEmployeeId": "2eef2d06-837f-4786-981b-dd9f3fcad65d",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329324558,
+        "persistent": true,
+        "messageId": "stale-1790329324558"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:42:04.558Z"
+    },
+    {
+      "id": "rogue-1790329327066",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.rogue.employee.created",
+      "content": {
+        "eventId": "rogue-1790329327066",
+        "eventType": "employee.created",
+        "centralTenantId": "00000000-0000-0000-0000-000000000000",
+        "hrEmployeeId": "rogue-emp-999",
+        "employeeCode": "ROGUE-999",
+        "firstName": "Rogue",
+        "lastName": "User",
+        "email": "rogue.user@foreigndealer.com",
+        "status": "ACTIVE"
+      },
+      "properties": {
+        "timestamp": 1790329327067,
+        "persistent": true,
+        "messageId": "rogue-1790329327066"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:42:07.067Z"
+    },
+    {
+      "id": "dlq-test-1790329329584",
+      "exchange": "automobile.events.dlx",
+      "routingKey": "maintly.employee.sync.dlq",
+      "content": {
+        "eventId": "dlq-test-1790329329584",
+        "eventType": "employee.created",
+        "reason": "Simulated failure for DLQ verification"
+      },
+      "properties": {
+        "timestamp": 1790329329584,
+        "persistent": true,
+        "messageId": "dlq-test-1790329329584"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:42:09.584Z"
+    },
+    {
+      "id": "dlq-test-1790329329584",
+      "exchange": "automobile.events.topic",
+      "routingKey": "maintly.employee.sync.dlq",
+      "content": {
+        "eventId": "dlq-test-1790329329584",
+        "eventType": "employee.created",
+        "reason": "Simulated failure for DLQ verification"
+      },
+      "properties": {
+        "timestamp": 1790329329584,
+        "persistent": true,
+        "messageId": "dlq-test-1790329329584"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:42:09.598Z"
+    },
+    {
+      "id": "5938bf34-a5c2-4d76-9a05-f5b0604afa6b",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "tech.sync-07156@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "5938bf34-a5c2-4d76-9a05-f5b0604afa6b",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:45:07.169Z",
+        "department": "Service",
+        "designation": "Senior Diagnostic Technician",
+        "employeeCode": "EMP-1012",
+        "hrEmployeeId": "2cf6f283-4be4-4aec-b94f-20c50e57d9c6",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329507170,
+        "persistent": true,
+        "messageId": "5938bf34-a5c2-4d76-9a05-f5b0604afa6b",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "2cf6f283-4be4-4aec-b94f-20c50e57d9c6",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:45:07.306Z"
+    },
+    {
+      "id": "789e9604-3ff7-4673-903b-f42f740b0054",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "tech.sync-07156@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "789e9604-3ff7-4673-903b-f42f740b0054",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "4592041e-fe7d-473e-89ee-54ebdc630e50"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:45:10.707Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1012",
+        "hrEmployeeId": "2cf6f283-4be4-4aec-b94f-20c50e57d9c6",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329510708,
+        "persistent": true,
+        "messageId": "789e9604-3ff7-4673-903b-f42f740b0054",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "2cf6f283-4be4-4aec-b94f-20c50e57d9c6",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:45:11.324Z"
+    },
+    {
+      "id": "ce223def-9a67-4c79-95f9-0ecb6d3e567e",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.transferred",
+      "content": {
+        "email": "tech.sync-07156@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "ce223def-9a67-4c79-95f9-0ecb6d3e567e",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "reason": "Promoted to Lead Technician at central workshop",
+          "toBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c",
+          "fromBranchId": "4592041e-fe7d-473e-89ee-54ebdc630e50"
+        },
+        "eventType": "employee.transferred",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:45:13.729Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1012",
+        "hrEmployeeId": "2cf6f283-4be4-4aec-b94f-20c50e57d9c6",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329513730,
+        "persistent": true,
+        "messageId": "ce223def-9a67-4c79-95f9-0ecb6d3e567e",
+        "type": "employee.transferred",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "2cf6f283-4be4-4aec-b94f-20c50e57d9c6",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:45:15.342Z"
+    },
+    {
+      "id": "09700474-fd16-4849-981f-c332b85190ef",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.deactivated",
+      "content": {
+        "email": "tech.sync-07156@belladgroup.com",
+        "phone": "9999888877",
+        "status": "RESIGNED",
+        "eventId": "09700474-fd16-4849-981f-c332b85190ef",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "reason": "Sabbatical leave",
+          "previousStatus": "ACTIVE"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:45:16.747Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1012",
+        "hrEmployeeId": "2cf6f283-4be4-4aec-b94f-20c50e57d9c6",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329516748,
+        "persistent": true,
+        "messageId": "09700474-fd16-4849-981f-c332b85190ef",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "2cf6f283-4be4-4aec-b94f-20c50e57d9c6",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:45:17.349Z"
+    },
+    {
+      "id": "ccfdea12-1985-48fe-92f8-cd5195c98d6e",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.reactivated",
+      "content": {
+        "email": "tech.sync-07156@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "ccfdea12-1985-48fe-92f8-cd5195c98d6e",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "previousStatus": "RESIGNED"
+        },
+        "eventType": "employee.reactivated",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:45:19.763Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1012",
+        "hrEmployeeId": "2cf6f283-4be4-4aec-b94f-20c50e57d9c6",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329519764,
+        "persistent": true,
+        "messageId": "ccfdea12-1985-48fe-92f8-cd5195c98d6e",
+        "type": "employee.reactivated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "2cf6f283-4be4-4aec-b94f-20c50e57d9c6",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:45:21.362Z"
+    },
+    {
+      "id": "5938bf34-a5c2-4d76-9a05-f5b0604afa6b",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "tech.sync-07156@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "5938bf34-a5c2-4d76-9a05-f5b0604afa6b",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:45:07.169Z",
+        "department": "Service",
+        "designation": "Senior Diagnostic Technician",
+        "employeeCode": "EMP-1012",
+        "hrEmployeeId": "2cf6f283-4be4-4aec-b94f-20c50e57d9c6",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329522782,
+        "persistent": true,
+        "messageId": "5938bf34-a5c2-4d76-9a05-f5b0604afa6b"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:45:22.782Z"
+    },
+    {
+      "id": "stale-1790329525286",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "tech.sync-07156@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "stale-1790329525286",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2021-01-01T00:00:00.000Z",
+        "department": "Service",
+        "designation": "Outdated Stale 2021 Title",
+        "employeeCode": "EMP-1012",
+        "hrEmployeeId": "2cf6f283-4be4-4aec-b94f-20c50e57d9c6",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329525287,
+        "persistent": true,
+        "messageId": "stale-1790329525286"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:45:25.287Z"
+    },
+    {
+      "id": "rogue-1790329527794",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.rogue.employee.created",
+      "content": {
+        "eventId": "rogue-1790329527794",
+        "eventType": "employee.created",
+        "centralTenantId": "00000000-0000-0000-0000-000000000000",
+        "hrEmployeeId": "rogue-emp-999",
+        "employeeCode": "ROGUE-999",
+        "firstName": "Rogue",
+        "lastName": "User",
+        "email": "rogue.user@foreigndealer.com",
+        "status": "ACTIVE"
+      },
+      "properties": {
+        "timestamp": 1790329527794,
+        "persistent": true,
+        "messageId": "rogue-1790329527794"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:45:27.794Z"
+    },
+    {
+      "id": "dlq-test-1790329530301",
+      "exchange": "automobile.events.dlx",
+      "routingKey": "maintly.employee.sync.dlq",
+      "content": {
+        "eventId": "dlq-test-1790329530301",
+        "eventType": "employee.created",
+        "reason": "Simulated failure for DLQ verification"
+      },
+      "properties": {
+        "timestamp": 1790329530302,
+        "persistent": true,
+        "messageId": "dlq-test-1790329530301"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:45:30.302Z"
+    },
+    {
+      "id": "dlq-test-1790329530301",
+      "exchange": "automobile.events.topic",
+      "routingKey": "maintly.employee.sync.dlq",
+      "content": {
+        "eventId": "dlq-test-1790329530301",
+        "eventType": "employee.created",
+        "reason": "Simulated failure for DLQ verification"
+      },
+      "properties": {
+        "timestamp": 1790329530302,
+        "persistent": true,
+        "messageId": "dlq-test-1790329530301"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:45:30.306Z"
+    },
+    {
+      "id": "037402ae-2573-4054-bf00-27de503867a6",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "legacy.holder.1790329658679@belladgroup.com",
+        "phone": null,
+        "status": "ACTIVE",
+        "eventId": "037402ae-2573-4054-bf00-27de503867a6",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-25T09:47:38.689Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1013",
+        "hrEmployeeId": "c0f5301f-d4fd-4e6f-97ca-76c9978a325f",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329658690,
+        "persistent": true,
+        "messageId": "037402ae-2573-4054-bf00-27de503867a6",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "c0f5301f-d4fd-4e6f-97ca-76c9978a325f",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:47:39.969Z"
+    },
+    {
+      "id": "61637968-bdcb-4070-bfac-7bdf0c5077be",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "legacy.holder.1790329658679@belladgroup.com",
+        "phone": "+91 99999 88888",
+        "status": "ACTIVE",
+        "eventId": "61637968-bdcb-4070-bfac-7bdf0c5077be",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-25T09:47:38.705Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1013",
+        "hrEmployeeId": "c0f5301f-d4fd-4e6f-97ca-76c9978a325f",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329658706,
+        "persistent": true,
+        "messageId": "61637968-bdcb-4070-bfac-7bdf0c5077be",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "c0f5301f-d4fd-4e6f-97ca-76c9978a325f",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:47:40.043Z"
+    },
+    {
+      "id": "a817ae67-57dc-43b4-ae2d-8138f80517b2",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.deactivated",
+      "content": {
+        "email": "emp.rahul@hrflow.com",
+        "phone": "+91 98201 12345",
+        "status": "RESIGNED",
+        "eventId": "a817ae67-57dc-43b4-ae2d-8138f80517b2",
+        "version": "1.0.0",
+        "fullName": "Rahul Sharma",
+        "lastName": "Sharma",
+        "metadata": {
+          "reason": "Relocating to another city for higher education.",
+          "source": "RESIGNATION",
+          "resignationId": "a100cc58-08ea-4210-bcf2-f7877dc7846c"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Rahul",
+        "timestamp": "2026-09-25T09:47:40.148Z",
+        "department": "Engineering",
+        "designation": "Software Systems Engineer",
+        "employeeCode": "APEX-1001",
+        "hrEmployeeId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790329660149,
+        "persistent": true,
+        "messageId": "a817ae67-57dc-43b4-ae2d-8138f80517b2",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:47:41.914Z"
+    },
+    {
+      "id": "8b3b5f52-ba4a-4d32-8fb8-e2ba4aff6914",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "tech.sync-98824@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "8b3b5f52-ba4a-4d32-8fb8-e2ba4aff6914",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:48:18.835Z",
+        "department": "Service",
+        "designation": "Senior Diagnostic Technician",
+        "employeeCode": "EMP-1013",
+        "hrEmployeeId": "117217fd-52ce-441a-840d-dd272b47c67e",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329698835,
+        "persistent": true,
+        "messageId": "8b3b5f52-ba4a-4d32-8fb8-e2ba4aff6914",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "117217fd-52ce-441a-840d-dd272b47c67e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:48:20.050Z"
+    },
+    {
+      "id": "c09c7cd1-20db-4ed0-bca2-64df68e47ce6",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "tech.sync-98824@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "c09c7cd1-20db-4ed0-bca2-64df68e47ce6",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "4592041e-fe7d-473e-89ee-54ebdc630e50"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:48:22.357Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1013",
+        "hrEmployeeId": "117217fd-52ce-441a-840d-dd272b47c67e",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329702358,
+        "persistent": true,
+        "messageId": "c09c7cd1-20db-4ed0-bca2-64df68e47ce6",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "117217fd-52ce-441a-840d-dd272b47c67e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:48:24.068Z"
+    },
+    {
+      "id": "e68bb881-04e0-42b7-80e6-8d30eefa767b",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.transferred",
+      "content": {
+        "email": "tech.sync-98824@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "e68bb881-04e0-42b7-80e6-8d30eefa767b",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "reason": "Promoted to Lead Technician at central workshop",
+          "toBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c",
+          "fromBranchId": "4592041e-fe7d-473e-89ee-54ebdc630e50"
+        },
+        "eventType": "employee.transferred",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:48:25.383Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1013",
+        "hrEmployeeId": "117217fd-52ce-441a-840d-dd272b47c67e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329705384,
+        "persistent": true,
+        "messageId": "e68bb881-04e0-42b7-80e6-8d30eefa767b",
+        "type": "employee.transferred",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "117217fd-52ce-441a-840d-dd272b47c67e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:48:26.078Z"
+    },
+    {
+      "id": "6f9dfc1e-5b87-4416-a0a3-96ce36fd3364",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.deactivated",
+      "content": {
+        "email": "tech.sync-98824@belladgroup.com",
+        "phone": "9999888877",
+        "status": "RESIGNED",
+        "eventId": "6f9dfc1e-5b87-4416-a0a3-96ce36fd3364",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "reason": "Sabbatical leave",
+          "previousStatus": "ACTIVE"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:48:28.407Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1013",
+        "hrEmployeeId": "117217fd-52ce-441a-840d-dd272b47c67e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329708408,
+        "persistent": true,
+        "messageId": "6f9dfc1e-5b87-4416-a0a3-96ce36fd3364",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "117217fd-52ce-441a-840d-dd272b47c67e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:48:30.100Z"
+    },
+    {
+      "id": "173b30f5-9d73-47fc-836e-1ff4e73a5019",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.reactivated",
+      "content": {
+        "email": "tech.sync-98824@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "173b30f5-9d73-47fc-836e-1ff4e73a5019",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "previousStatus": "RESIGNED"
+        },
+        "eventType": "employee.reactivated",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:48:31.428Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1013",
+        "hrEmployeeId": "117217fd-52ce-441a-840d-dd272b47c67e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329711429,
+        "persistent": true,
+        "messageId": "173b30f5-9d73-47fc-836e-1ff4e73a5019",
+        "type": "employee.reactivated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "117217fd-52ce-441a-840d-dd272b47c67e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:48:32.111Z"
+    },
+    {
+      "id": "8b3b5f52-ba4a-4d32-8fb8-e2ba4aff6914",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "tech.sync-98824@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "8b3b5f52-ba4a-4d32-8fb8-e2ba4aff6914",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-25T09:48:18.835Z",
+        "department": "Service",
+        "designation": "Senior Diagnostic Technician",
+        "employeeCode": "EMP-1013",
+        "hrEmployeeId": "117217fd-52ce-441a-840d-dd272b47c67e",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329714454,
+        "persistent": true,
+        "messageId": "8b3b5f52-ba4a-4d32-8fb8-e2ba4aff6914"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:48:34.454Z"
+    },
+    {
+      "id": "stale-1790329716960",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "tech.sync-98824@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "stale-1790329716960",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2021-01-01T00:00:00.000Z",
+        "department": "Service",
+        "designation": "Outdated Stale 2021 Title",
+        "employeeCode": "EMP-1013",
+        "hrEmployeeId": "117217fd-52ce-441a-840d-dd272b47c67e",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790329716960,
+        "persistent": true,
+        "messageId": "stale-1790329716960"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:48:36.960Z"
+    },
+    {
+      "id": "rogue-1790329719471",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.rogue.employee.created",
+      "content": {
+        "eventId": "rogue-1790329719471",
+        "eventType": "employee.created",
+        "centralTenantId": "00000000-0000-0000-0000-000000000000",
+        "hrEmployeeId": "rogue-emp-999",
+        "employeeCode": "ROGUE-999",
+        "firstName": "Rogue",
+        "lastName": "User",
+        "email": "rogue.user@foreigndealer.com",
+        "status": "ACTIVE"
+      },
+      "properties": {
+        "timestamp": 1790329719471,
+        "persistent": true,
+        "messageId": "rogue-1790329719471"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:48:39.471Z"
+    },
+    {
+      "id": "dlq-test-1790329721982",
+      "exchange": "automobile.events.dlx",
+      "routingKey": "maintly.employee.sync.dlq",
+      "content": {
+        "eventId": "dlq-test-1790329721982",
+        "eventType": "employee.created",
+        "reason": "Simulated failure for DLQ verification"
+      },
+      "properties": {
+        "timestamp": 1790329721982,
+        "persistent": true,
+        "messageId": "dlq-test-1790329721982"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:48:41.982Z"
+    },
+    {
+      "id": "dlq-test-1790329721982",
+      "exchange": "automobile.events.topic",
+      "routingKey": "maintly.employee.sync.dlq",
+      "content": {
+        "eventId": "dlq-test-1790329721982",
+        "eventType": "employee.created",
+        "reason": "Simulated failure for DLQ verification"
+      },
+      "properties": {
+        "timestamp": 1790329721982,
+        "persistent": true,
+        "messageId": "dlq-test-1790329721982"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T09:48:41.986Z"
+    }
+  ],
+  "queueMessages": {
+    "maintly.employee.sync": [],
+    "maintly.employee.sync.dlq": []
+  },
+  "savedAt": "2026-09-25T09:48:41.987Z"
+}

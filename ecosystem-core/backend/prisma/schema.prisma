@@ -1,0 +1,506 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+  TRIAL
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  INVITED
+}
+
+enum SubscriptionTier {
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+  CUSTOM
+}
+
+enum AppSubscriptionStatus {
+  ACTIVE
+  TRIAL
+  EXPIRED
+  SUSPENDED
+  PENDING
+}
+
+enum ScopeType {
+  GLOBAL
+  TENANT
+  FIRM
+  BRAND
+  BRANCH
+  DEPARTMENT
+}
+
+enum EventStatus {
+  PENDING
+  PUBLISHED
+  FAILED
+  DEAD_LETTER
+}
+
+// ==========================================
+// 1. TENANT (DEALERSHIP GROUP)
+// ==========================================
+
+model Tenant {
+  id               String           @id @default(uuid())
+  code             String           @unique
+  name             String           // e.g. "Bellad Group", "Apex Automotive Group"
+  legalName        String           // e.g. "Bellad Enterprises Private Limited"
+  status           TenantStatus     @default(ACTIVE)
+  subscriptionTier SubscriptionTier @default(ENTERPRISE)
+  logoUrl          String?
+  website          String?
+  primaryContact   String?
+  primaryEmail     String?
+  primaryPhone     String?
+  addressLine1     String?
+  addressLine2     String?
+  city             String?
+  state            String?
+  pincode          String?
+  country          String           @default("India")
+  timezone         String           @default("Asia/Kolkata")
+  currency         String           @default("INR")
+  settings         Json?            // Tenant-wide customizable configuration
+  metadata         Json?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  firms               Firm[]
+  brands              Brand[]
+  firmBrands          FirmBrand[]
+  branches            Branch[]
+  departments         Department[]
+  users               User[]
+  memberships         OrganizationMembership[]
+  tenantApplications  TenantApplication[]
+  roles               Role[]
+  userRoleAssignments UserRoleAssignment[]
+  auditLogs           AuditLog[]
+  integrationEvents   IntegrationEvent[]
+
+  @@index([code])
+  @@index([status])
+  @@map("tenants")
+}
+
+// ==========================================
+// 2. FIRM (LEGAL CORPORATE ENTITIES)
+// ==========================================
+
+model Firm {
+  id           String   @id @default(uuid())
+  tenantId     String
+  code         String   // e.g. "BMPL" (Bellad Motors Pvt Ltd)
+  name         String   // e.g. "Bellad Motors Pvt Ltd"
+  panNumber    String?
+  gstin        String?
+  cin          String?
+  tanNumber    String?
+  registeredAt String?  // Registered state / jurisdiction
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  firmBrands          FirmBrand[]
+  branches            Branch[]
+  userRoleAssignments UserRoleAssignment[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("firms")
+}
+
+// ==========================================
+// 3. BRAND (AUTOMOTIVE OEM FRANCHISES)
+// ==========================================
+
+model Brand {
+  id          String   @id @default(uuid())
+  tenantId    String
+  code        String   // e.g. "HYUNDAI", "MARUTI_SUZUKI", "KIA", "TOYOTA"
+  name        String   // e.g. "Hyundai Motor India"
+  logoUrl     String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  firmBrands          FirmBrand[]
+  userRoleAssignments UserRoleAssignment[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("brands")
+}
+
+// ==========================================
+// 4. FIRM-BRAND JUNCTION (DEALER FRANCHISE)
+// ==========================================
+
+model FirmBrand {
+  id                String    @id @default(uuid())
+  tenantId          String
+  firmId            String
+  brandId           String
+  dealerAgreementNo String?
+  agreementExpiry   DateTime?
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  firm     Firm     @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  brand    Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  branches Branch[]
+
+  @@unique([firmId, brandId])
+  @@index([tenantId])
+  @@index([firmId])
+  @@index([brandId])
+  @@map("firm_brands")
+}
+
+// ==========================================
+// 5. BRANCH (PHYSICAL SHOWROOM / WORKSHOP)
+// ==========================================
+
+model Branch {
+  id          String   @id @default(uuid())
+  tenantId    String
+  firmId      String
+  firmBrandId String?
+  code        String   // e.g. "HBL-SHOWROOM-01", "BGM-WORKSHOP-02"
+  name        String   // e.g. "Hubli Main Showroom", "Belgaum Bodyshop"
+  outletType  String   @default("3S_FACILITY") // 3S, SHOWROOM, WORKSHOP, BODYSHOP, STOCKYARD
+  address     String?
+  city        String
+  state       String
+  pincode     String?
+  phone       String?
+  email       String?
+  gstin       String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant              Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  firm                Firm                     @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  firmBrand           FirmBrand?               @relation(fields: [firmBrandId], references: [id], onDelete: SetNull)
+  departments         Department[]
+  memberships         OrganizationMembership[]
+  userRoleAssignments UserRoleAssignment[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([firmId])
+  @@index([firmBrandId])
+  @@map("branches")
+}
+
+// ==========================================
+// 6. DEPARTMENT (FUNCTIONAL TEAMS)
+// ==========================================
+
+model Department {
+  id          String   @id @default(uuid())
+  tenantId    String
+  branchId    String?  // Optional: department can be branch-specific or tenant-wide
+  code        String   // e.g. "SALES", "SERVICE", "BODYSHOP", "SPARES", "ACCOUNTS", "HR"
+  name        String   // e.g. "New Car Sales", "Mechanical Service"
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant              Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch              Branch?                  @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  memberships         OrganizationMembership[]
+  userRoleAssignments UserRoleAssignment[]
+
+  @@unique([tenantId, code, branchId])
+  @@index([tenantId])
+  @@index([branchId])
+  @@map("departments")
+}
+
+// ==========================================
+// 7. USER (CENTRAL IDENTITY & DIRECTORY)
+// ==========================================
+
+model User {
+  id              String     @id @default(uuid())
+  tenantId        String?    // Nullable only for cross-tenant super platform admins
+  keycloakSub     String?    @unique // Keycloak Identity Provider Subject UUID
+  email           String     @unique
+  username        String?    @unique
+  passwordHash    String?    // Bcrypt hash for fallback / legacy login
+  firstName       String
+  lastName        String
+  phone           String?
+  avatarUrl       String?
+  status          UserStatus @default(ACTIVE)
+  isPlatformAdmin Boolean    @default(false)
+  lastLoginAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  tenant              Tenant?                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  memberships         OrganizationMembership[]
+  userRoleAssignments UserRoleAssignment[]
+  auditLogs           AuditLog[]
+
+  @@index([tenantId])
+  @@index([email])
+  @@index([keycloakSub])
+  @@map("users")
+}
+
+// ==========================================
+// 8. ORGANIZATION MEMBERSHIP
+// ==========================================
+
+model OrganizationMembership {
+  id           String   @id @default(uuid())
+  tenantId     String
+  userId       String
+  branchId     String
+  departmentId String?
+  isPrimary    Boolean  @default(false)
+  employeeCode String?  // Optional HR master employee code link
+  designation  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch     Branch      @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, branchId, departmentId])
+  @@index([tenantId])
+  @@index([userId])
+  @@index([branchId])
+  @@map("organization_memberships")
+}
+
+// ==========================================
+// 9. APPLICATION (ECOSYSTEM REGISTRY)
+// ==========================================
+
+model Application {
+  id             String   @id @default(uuid())
+  appKey         String   @unique // e.g. "hrflow", "maintly", "enquiry-crm", "vehicle-billing"
+  name           String   // e.g. "HRFlow HRMS", "MAINTLY Facility & Maintenance"
+  description    String?
+  icon           String?  @default("AppWindow")
+  baseUrl        String   // e.g. "http://localhost:3001"
+  apiUrl         String   // e.g. "http://localhost:5001"
+  version        String   @default("1.0.0")
+  category       String   @default("OPERATIONS") // HR, OPERATIONS, CRM, FINANCE, INVENTORY
+  healthEndpoint String   @default("/api/health")
+  isActive       Boolean  @default(true)
+  settings       Json?    // Manifest, required permissions, navigation items
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenantApplications TenantApplication[]
+  permissions        Permission[]
+
+  @@map("applications")
+}
+
+// ==========================================
+// 10. TENANT APPLICATION (SUBSCRIPTION)
+// ==========================================
+
+model TenantApplication {
+  id            String                @id @default(uuid())
+  tenantId      String
+  applicationId String
+  status        AppSubscriptionStatus @default(ACTIVE)
+  planName      String                @default("STANDARD")
+  customConfig  Json?                 // Tenant-specific application overrides
+  features      Json?                 // Feature flags enabled for this tenant
+  startsAt      DateTime              @default(now())
+  expiresAt     DateTime?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, applicationId])
+  @@index([tenantId])
+  @@index([applicationId])
+  @@map("tenant_applications")
+}
+
+// ==========================================
+// 11. ROLE (SCOPED RBAC ROLES)
+// ==========================================
+
+model Role {
+  id          String    @id @default(uuid())
+  tenantId    String?   // Null for system-wide roles, set for tenant-custom roles
+  code        String    // e.g. "TENANT_ADMIN", "FIRM_ADMIN", "BRANCH_MANAGER", "HR_OFFICER"
+  name        String    // e.g. "Tenant Administrator", "Branch General Manager"
+  description String?
+  scopeType   ScopeType @default(TENANT)
+  isSystem    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant              Tenant?              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rolePermissions     RolePermission[]
+  userRoleAssignments UserRoleAssignment[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("roles")
+}
+
+// ==========================================
+// 12. PERMISSION (GRANULAR CAPABILITIES)
+// ==========================================
+
+model Permission {
+  id            String   @id @default(uuid())
+  applicationId String?  // Optional link to declaring application
+  code          String   @unique // e.g. "hr.employee.read", "maintenance.ticket.create"
+  domain        String   // e.g. "hr", "maintenance", "platform", "crm"
+  resource      String   // e.g. "employee", "ticket", "tenant"
+  action        String   // e.g. "read", "create", "update", "delete", "approve"
+  description   String?
+  createdAt     DateTime @default(now())
+
+  application     Application?     @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  rolePermissions RolePermission[]
+
+  @@index([domain])
+  @@index([code])
+  @@map("permissions")
+}
+
+// ==========================================
+// 13. ROLE-PERMISSION JUNCTION
+// ==========================================
+
+model RolePermission {
+  id           String   @id @default(uuid())
+  roleId       String
+  permissionId String
+  createdAt    DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+// ==========================================
+// 14. USER ROLE ASSIGNMENT (WITH SCOPE)
+// ==========================================
+
+model UserRoleAssignment {
+  id           String    @id @default(uuid())
+  userId       String
+  roleId       String
+  tenantId     String
+  firmId       String?   // Optional firm scope
+  brandId      String?   // Optional brand scope
+  branchId     String?   // Optional branch scope
+  departmentId String?   // Optional department scope
+  scopeType    ScopeType @default(TENANT)
+  assignedBy   String?
+  createdAt    DateTime  @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  firm       Firm?       @relation(fields: [firmId], references: [id], onDelete: SetNull)
+  brand      Brand?      @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  branch     Branch?     @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([roleId])
+  @@index([tenantId])
+  @@index([branchId])
+  @@map("user_role_assignments")
+}
+
+// ==========================================
+// 15. AUDIT LOG (GOVERNANCE TELEMETRY)
+// ==========================================
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  tenantId   String
+  userId     String?
+  action     String   // e.g. "TENANT_CREATED", "USER_ROLE_ASSIGNED", "BRANCH_UPDATED"
+  entityType String   // e.g. "Tenant", "User", "Branch", "Role"
+  entityId   String?
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, entityType])
+  @@index([tenantId, createdAt])
+  @@map("audit_logs")
+}
+
+// ==========================================
+// 16. INTEGRATION EVENT (TRANSACTIONAL OUTBOX)
+// ==========================================
+
+model IntegrationEvent {
+  id          String      @id @default(uuid())
+  tenantId    String
+  eventType   String      // e.g. "employee.created", "tenant.onboarded", "branch.created"
+  aggregateId String
+  payload     Json
+  status      EventStatus @default(PENDING)
+  retryCount  Int         @default(0)
+  maxRetries  Int         @default(5)
+  lastError   String?
+  publishedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([eventType])
+  @@map("integration_events")
+}

@@ -1,0 +1,275 @@
+import prisma from '../../config/db.js';
+
+export async function getTenants(req, res, next) {
+  try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const skip = (page - 1) * limit;
+
+    if (!req.isPlatformAdmin) {
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: req.tenantId },
+        include: {
+          firms: true,
+          brands: true,
+          branches: true,
+          tenantApplications: { include: { application: true } }
+        }
+      });
+      return res.json({
+        success: true,
+        data: tenant ? [tenant] : [],
+        meta: { total: tenant ? 1 : 0, page: 1, limit, totalPages: 1 }
+      });
+    }
+
+    const { status, subscriptionTier, search } = req.query;
+    const where = {};
+    if (status) where.status = status;
+    if (subscriptionTier) where.subscriptionTier = subscriptionTier;
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { code: { contains: search, mode: 'insensitive' } },
+        { legalName: { contains: search, mode: 'insensitive' } },
+        { city: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const [total, tenants] = await Promise.all([
+      prisma.tenant.count({ where }),
+      prisma.tenant.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          _count: {
+            select: { firms: true, brands: true, branches: true, users: true }
+          },
+          tenantApplications: {
+            include: { application: true }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      })
+    ]);
+
+    res.json({
+      success: true,
+      data: tenants,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getTenantById(req, res, next) {
+  try {
+    const { id } = req.params;
+    if (!req.isPlatformAdmin && req.tenantId !== id) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Unauthorized access to other tenant records.' }
+      });
+    }
+
+    const tenant = await prisma.tenant.findUnique({
+      where: { id },
+      include: {
+        firms: { include: { branches: true } },
+        brands: true,
+        firmBrands: { include: { firm: true, brand: true } },
+        branches: { include: { firm: true, firmBrand: true, departments: true } },
+        tenantApplications: { include: { application: true } }
+      }
+    });
+
+    if (!tenant) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Tenant not found.' } });
+    }
+
+    res.json({ success: true, data: tenant });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function createTenant(req, res, next) {
+  try {
+    const {
+      code, name, legalName, subscriptionTier, primaryContact, primaryEmail, primaryPhone,
+      addressLine1, addressLine2, city, state, pincode, country
+    } = req.body;
+
+    if (!code || !name || !legalName) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Tenant code, name, and legalName are required.' }
+      });
+    }
+
+    if (primaryEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(primaryEmail)) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Invalid primaryEmail format.' }
+      });
+    }
+
+    const normalizedCode = code.toUpperCase().trim();
+    const existing = await prisma.tenant.findUnique({ where: { code: normalizedCode } });
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        error: { code: 'CONFLICT', message: `Tenant with code '${normalizedCode}' already exists.` }
+      });
+    }
+
+    const tenant = await prisma.tenant.create({
+      data: {
+        code: normalizedCode,
+        name: name.trim(),
+        legalName: legalName.trim(),
+        subscriptionTier: subscriptionTier || 'ENTERPRISE',
+        primaryContact,
+        primaryEmail,
+        primaryPhone,
+        addressLine1,
+        addressLine2,
+        city,
+        state,
+        pincode,
+        country: country || 'India'
+      }
+    });
+
+    // Auto-subscribe to default active applications
+    const activeApps = await prisma.application.findMany({ where: { isActive: true } });
+    for (const app of activeApps) {
+      await prisma.tenantApplication.create({
+        data: {
+          tenantId: tenant.id,
+          applicationId: app.id,
+          status: 'ACTIVE',
+          planName: 'STANDARD'
+        }
+      });
+    }
+
+    // Log in audit trail
+    await prisma.auditLog.create({
+      data: {
+        tenantId: tenant.id,
+        userId: req.userId || null,
+        action: 'TENANT_CREATED',
+        entityType: 'Tenant',
+        entityId: tenant.id,
+        newValue: { code: tenant.code, name: tenant.name, tier: tenant.subscriptionTier }
+      }
+    });
+
+    res.status(201).json({ success: true, data: tenant });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateTenant(req, res, next) {
+  try {
+    const { id } = req.params;
+    if (!req.isPlatformAdmin && req.tenantId !== id) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Unauthorized tenant modification.' }
+      });
+    }
+
+    const existing = await prisma.tenant.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Tenant not found.' } });
+    }
+
+    const {
+      name, legalName, primaryContact, primaryEmail, primaryPhone,
+      addressLine1, addressLine2, city, state, pincode, settings
+    } = req.body;
+
+    const updated = await prisma.tenant.update({
+      where: { id },
+      data: {
+        name: name !== undefined ? name.trim() : undefined,
+        legalName: legalName !== undefined ? legalName.trim() : undefined,
+        primaryContact,
+        primaryEmail,
+        primaryPhone,
+        addressLine1,
+        addressLine2,
+        city,
+        state,
+        pincode,
+        settings: settings !== undefined ? settings : undefined
+      }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        tenantId: id,
+        userId: req.userId || null,
+        action: 'TENANT_UPDATED',
+        entityType: 'Tenant',
+        entityId: id,
+        oldValue: { name: existing.name, legalName: existing.legalName },
+        newValue: { name: updated.name, legalName: updated.legalName }
+      }
+    });
+
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateTenantStatus(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!['ACTIVE', 'SUSPENDED', 'INACTIVE', 'TRIAL'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_STATUS', message: 'Invalid tenant status. Allowed: ACTIVE, SUSPENDED, INACTIVE, TRIAL' }
+      });
+    }
+
+    const existing = await prisma.tenant.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Tenant not found.' } });
+    }
+
+    const updated = await prisma.tenant.update({
+      where: { id },
+      data: { status }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        tenantId: id,
+        userId: req.userId || null,
+        action: 'TENANT_STATUS_UPDATED',
+        entityType: 'Tenant',
+        entityId: id,
+        oldValue: { status: existing.status },
+        newValue: { status: updated.status }
+      }
+    });
+
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    next(error);
+  }
+}

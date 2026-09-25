@@ -1,0 +1,145 @@
+{
+  "realm": "automobile-ecosystem",
+  "displayName": "Automobile Dealership Network IAM",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "roles": {
+    "realm": [
+      {
+        "name": "PLATFORM_ADMIN",
+        "description": "Global SaaS Platform Super Administrator"
+      },
+      {
+        "name": "TENANT_ADMIN",
+        "description": "Dealership Group Administrator"
+      },
+      {
+        "name": "BRANCH_MANAGER",
+        "description": "Branch Operations General Manager"
+      },
+      {
+        "name": "HR_OFFICER",
+        "description": "HR & Payroll Administrator"
+      },
+      {
+        "name": "TECHNICIAN",
+        "description": "Facility Maintenance Technician"
+      },
+      {
+        "name": "EMPLOYEE",
+        "description": "Dealership Staff Member"
+      }
+    ]
+  },
+  "scopeMappings": [],
+  "clientScopeMappings": {},
+  "clients": [
+    {
+      "clientId": "ecosystem-portal",
+      "name": "Ecosystem Central Portal",
+      "description": "Single Sign-On Enterprise Dashboard and Application Launcher",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/*"
+      },
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://localhost"
+      ]
+    },
+    {
+      "clientId": "hrflow-web",
+      "name": "HRFlow HRMS Frontend",
+      "description": "Human Resource Management System Web Client",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "redirectUris": [
+        "http://localhost:3001/*",
+        "http://localhost/apps/hrflow/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3001",
+        "http://localhost"
+      ]
+    },
+    {
+      "clientId": "maintly-web",
+      "name": "MAINTLY Facilities Frontend",
+      "description": "Maintenance & Facility Operations Web Client",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "redirectUris": [
+        "http://localhost:3002/*",
+        "http://localhost/apps/maintly/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3002",
+        "http://localhost"
+      ]
+    },
+    {
+      "clientId": "ecosystem-core-api",
+      "name": "Ecosystem Core Resource Server",
+      "description": "Central Governance and Directory Backend API",
+      "enabled": true,
+      "bearerOnly": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "hrflow-api",
+      "name": "HRFlow HRMS Resource Server",
+      "description": "HR and Payroll Backend API",
+      "enabled": true,
+      "bearerOnly": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "maintly-api",
+      "name": "MAINTLY Operations Resource Server",
+      "description": "Maintenance Ticketing Backend API",
+      "enabled": true,
+      "bearerOnly": true,
+      "protocol": "openid-connect"
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "role_list",
+    "profile",
+    "email"
+  ]
+}
