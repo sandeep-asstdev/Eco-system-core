@@ -1,5 +1,24 @@
 import prisma from '../../config/db.js';
 
+/**
+ * Resolves the Prisma where clause for tenant-scoped operations.
+ * Platform admins can access all records or filter by specific tenant via query/header.
+ * Regular users are strictly restricted to their own tenantId.
+ */
+function resolveTenantScope(req) {
+  if (req.isPlatformAdmin) {
+    const targetTenantId = req.headers['x-tenant-id'] || req.query?.tenantId || req.tenantId;
+    return targetTenantId ? { tenantId: targetTenantId } : {};
+  }
+  if (!req.tenantId) {
+    const error = new Error('Tenant context is required for this operation.');
+    error.statusCode = 403;
+    error.code = 'FORBIDDEN';
+    throw error;
+  }
+  return { tenantId: req.tenantId };
+}
+
 // ==========================================
 // FIRMS (LEGAL CORPORATE ENTITIES)
 // ==========================================
@@ -10,7 +29,7 @@ export async function getFirms(req, res, next) {
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
     const skip = (page - 1) * limit;
 
-    const where = { tenantId: req.tenantId };
+    const where = { ...resolveTenantScope(req) };
     if (req.query.active !== undefined) {
       where.isActive = req.query.active === 'true';
     }
@@ -46,7 +65,7 @@ export async function getFirmById(req, res, next) {
   try {
     const { id } = req.params;
     const firm = await prisma.firm.findFirst({
-      where: { id, tenantId: req.tenantId },
+      where: { id, ...resolveTenantScope(req) },
       include: {
         branches: true,
         firmBrands: { include: { brand: true } }
@@ -73,11 +92,19 @@ export async function createFirm(req, res, next) {
       });
     }
 
+    const targetTenantId = req.tenantId || req.headers['x-tenant-id'] || req.body.tenantId;
+    if (!targetTenantId) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'tenantId is required to create a firm.' }
+      });
+    }
+
     const normalizedCode = code.toUpperCase().trim();
 
     // Check unique code per tenant
     const existing = await prisma.firm.findUnique({
-      where: { tenantId_code: { tenantId: req.tenantId, code: normalizedCode } }
+      where: { tenantId_code: { tenantId: targetTenantId, code: normalizedCode } }
     });
     if (existing) {
       return res.status(409).json({
@@ -104,7 +131,7 @@ export async function createFirm(req, res, next) {
 
     const firm = await prisma.firm.create({
       data: {
-        tenantId: req.tenantId,
+        tenantId: targetTenantId,
         code: normalizedCode,
         name: name.trim(),
         panNumber: panNumber ? panNumber.toUpperCase().trim() : null,
@@ -117,7 +144,7 @@ export async function createFirm(req, res, next) {
 
     await prisma.auditLog.create({
       data: {
-        tenantId: req.tenantId,
+        tenantId: targetTenantId,
         userId: req.userId || null,
         action: 'FIRM_CREATED',
         entityType: 'Firm',
@@ -135,7 +162,7 @@ export async function createFirm(req, res, next) {
 export async function updateFirm(req, res, next) {
   try {
     const { id } = req.params;
-    const existing = await prisma.firm.findFirst({ where: { id, tenantId: req.tenantId } });
+    const existing = await prisma.firm.findFirst({ where: { id, ...resolveTenantScope(req) } });
     if (!existing) {
       return res.status(404).json({ success: false, error: { message: 'Firm not found.' } });
     }
@@ -157,7 +184,7 @@ export async function updateFirm(req, res, next) {
 
     await prisma.auditLog.create({
       data: {
-        tenantId: req.tenantId,
+        tenantId: existing.tenantId,
         userId: req.userId || null,
         action: 'FIRM_UPDATED',
         entityType: 'Firm',
@@ -180,7 +207,7 @@ export async function updateFirm(req, res, next) {
 export async function getBrands(req, res, next) {
   try {
     const brands = await prisma.brand.findMany({
-      where: { tenantId: req.tenantId },
+      where: { ...resolveTenantScope(req) },
       include: {
         firmBrands: {
           include: { firm: { select: { id: true, name: true, code: true } } }
@@ -198,7 +225,7 @@ export async function getBrandById(req, res, next) {
   try {
     const { id } = req.params;
     const brand = await prisma.brand.findFirst({
-      where: { id, tenantId: req.tenantId },
+      where: { id, ...resolveTenantScope(req) },
       include: {
         firmBrands: { include: { firm: true, branches: true } }
       }
@@ -224,9 +251,17 @@ export async function createBrand(req, res, next) {
       });
     }
 
+    const targetTenantId = req.tenantId || req.headers['x-tenant-id'] || req.body.tenantId;
+    if (!targetTenantId) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'tenantId is required to create a brand.' }
+      });
+    }
+
     const normalizedCode = code.toUpperCase().trim();
     const existing = await prisma.brand.findUnique({
-      where: { tenantId_code: { tenantId: req.tenantId, code: normalizedCode } }
+      where: { tenantId_code: { tenantId: targetTenantId, code: normalizedCode } }
     });
     if (existing) {
       return res.status(409).json({
@@ -237,7 +272,7 @@ export async function createBrand(req, res, next) {
 
     const brand = await prisma.brand.create({
       data: {
-        tenantId: req.tenantId,
+        tenantId: targetTenantId,
         code: normalizedCode,
         name: name.trim(),
         logoUrl,
@@ -247,7 +282,7 @@ export async function createBrand(req, res, next) {
 
     await prisma.auditLog.create({
       data: {
-        tenantId: req.tenantId,
+        tenantId: targetTenantId,
         userId: req.userId || null,
         action: 'BRAND_CREATED',
         entityType: 'Brand',
@@ -269,7 +304,7 @@ export async function createBrand(req, res, next) {
 export async function getFirmBrands(req, res, next) {
   try {
     const firmBrands = await prisma.firmBrand.findMany({
-      where: { tenantId: req.tenantId },
+      where: { ...resolveTenantScope(req) },
       include: {
         firm: true,
         brand: true,
@@ -292,10 +327,11 @@ export async function linkFirmBrand(req, res, next) {
       });
     }
 
+    const tenantFilter = resolveTenantScope(req);
     // Verify firm and brand belong to this tenant
     const [firm, brand] = await Promise.all([
-      prisma.firm.findFirst({ where: { id: firmId, tenantId: req.tenantId } }),
-      prisma.brand.findFirst({ where: { id: brandId, tenantId: req.tenantId } })
+      prisma.firm.findFirst({ where: { id: firmId, ...tenantFilter } }),
+      prisma.brand.findFirst({ where: { id: brandId, ...tenantFilter } })
     ]);
 
     if (!firm || !brand) {
@@ -305,6 +341,8 @@ export async function linkFirmBrand(req, res, next) {
       });
     }
 
+    const effectiveTenantId = firm.tenantId;
+
     const firmBrand = await prisma.firmBrand.upsert({
       where: { firmId_brandId: { firmId, brandId } },
       update: {
@@ -313,7 +351,7 @@ export async function linkFirmBrand(req, res, next) {
         isActive: true
       },
       create: {
-        tenantId: req.tenantId,
+        tenantId: effectiveTenantId,
         firmId,
         brandId,
         dealerAgreementNo,
@@ -324,7 +362,7 @@ export async function linkFirmBrand(req, res, next) {
 
     await prisma.auditLog.create({
       data: {
-        tenantId: req.tenantId,
+        tenantId: effectiveTenantId,
         userId: req.userId || null,
         action: 'FIRM_BRAND_LINKED',
         entityType: 'FirmBrand',
@@ -350,12 +388,13 @@ export async function getBranches(req, res, next) {
     const skip = (page - 1) * limit;
 
     const { firmId, brandId, city, outletType, search } = req.query;
-    const where = { tenantId: req.tenantId };
+    const where = { ...resolveTenantScope(req) };
 
     if (req.query.active !== undefined) {
       where.active = req.query.active === 'true';
     }
     if (firmId) where.firmId = firmId;
+    if (brandId) where.firmBrand = { brandId };
     if (outletType) where.outletType = outletType;
     if (city) where.city = { contains: city, mode: 'insensitive' };
     if (search) {
@@ -398,7 +437,7 @@ export async function getBranchById(req, res, next) {
   try {
     const { id } = req.params;
     const branch = await prisma.branch.findFirst({
-      where: { id, tenantId: req.tenantId },
+      where: { id, ...resolveTenantScope(req) },
       include: {
         firm: true,
         firmBrand: { include: { brand: true } },
@@ -435,8 +474,9 @@ export async function createBranch(req, res, next) {
       });
     }
 
+    const tenantFilter = resolveTenantScope(req);
     // Verify firm belongs to tenant
-    const firm = await prisma.firm.findFirst({ where: { id: firmId, tenantId: req.tenantId } });
+    const firm = await prisma.firm.findFirst({ where: { id: firmId, ...tenantFilter } });
     if (!firm) {
       return res.status(404).json({
         success: false,
@@ -444,9 +484,10 @@ export async function createBranch(req, res, next) {
       });
     }
 
+    const effectiveTenantId = firm.tenantId;
     const normalizedCode = code.toUpperCase().trim();
     const existing = await prisma.branch.findUnique({
-      where: { tenantId_code: { tenantId: req.tenantId, code: normalizedCode } }
+      where: { tenantId_code: { tenantId: effectiveTenantId, code: normalizedCode } }
     });
     if (existing) {
       return res.status(409).json({
@@ -457,7 +498,7 @@ export async function createBranch(req, res, next) {
 
     const branch = await prisma.branch.create({
       data: {
-        tenantId: req.tenantId,
+        tenantId: effectiveTenantId,
         firmId,
         firmBrandId: firmBrandId || null,
         code: normalizedCode,
@@ -485,7 +526,7 @@ export async function createBranch(req, res, next) {
     for (const d of standardDepts) {
       await prisma.department.create({
         data: {
-          tenantId: req.tenantId,
+          tenantId: effectiveTenantId,
           branchId: branch.id,
           code: d.code,
           name: d.name
@@ -495,7 +536,7 @@ export async function createBranch(req, res, next) {
 
     await prisma.auditLog.create({
       data: {
-        tenantId: req.tenantId,
+        tenantId: effectiveTenantId,
         userId: req.userId || null,
         action: 'BRANCH_CREATED',
         entityType: 'Branch',
@@ -507,7 +548,7 @@ export async function createBranch(req, res, next) {
     // Publish integration event
     await prisma.integrationEvent.create({
       data: {
-        tenantId: req.tenantId,
+        tenantId: effectiveTenantId,
         eventType: 'branch.created',
         aggregateId: branch.id,
         payload: {
@@ -529,7 +570,7 @@ export async function createBranch(req, res, next) {
 export async function updateBranch(req, res, next) {
   try {
     const { id } = req.params;
-    const existing = await prisma.branch.findFirst({ where: { id, tenantId: req.tenantId } });
+    const existing = await prisma.branch.findFirst({ where: { id, ...resolveTenantScope(req) } });
     if (!existing) {
       return res.status(404).json({ success: false, error: { message: 'Branch not found.' } });
     }
@@ -554,7 +595,7 @@ export async function updateBranch(req, res, next) {
 
     await prisma.auditLog.create({
       data: {
-        tenantId: req.tenantId,
+        tenantId: existing.tenantId,
         userId: req.userId || null,
         action: 'BRANCH_UPDATED',
         entityType: 'Branch',
@@ -577,7 +618,7 @@ export async function updateBranch(req, res, next) {
 export async function getDepartments(req, res, next) {
   try {
     const { branchId } = req.query;
-    const where = { tenantId: req.tenantId, active: true };
+    const where = { ...resolveTenantScope(req), active: true };
     if (branchId) where.branchId = branchId;
 
     const departments = await prisma.department.findMany({
@@ -605,13 +646,31 @@ export async function createDepartment(req, res, next) {
       });
     }
 
+    let effectiveTenantId = req.body.tenantId || req.headers['x-tenant-id'] || req.tenantId;
+    if (branchId) {
+      const branch = await prisma.branch.findFirst({
+        where: { id: branchId, ...resolveTenantScope(req) }
+      });
+      if (!branch) {
+        return res.status(404).json({ success: false, error: { message: 'Branch not found.' } });
+      }
+      effectiveTenantId = branch.tenantId;
+    }
+
+    if (!effectiveTenantId) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'tenantId is required to create a department.' }
+      });
+    }
+
     const normalizedCode = code.toUpperCase().trim();
 
     // Check unique on tenant + code + branchId
     const existing = await prisma.department.findUnique({
       where: {
         tenantId_code_branchId: {
-          tenantId: req.tenantId,
+          tenantId: effectiveTenantId,
           code: normalizedCode,
           branchId: branchId || null
         }
@@ -626,7 +685,7 @@ export async function createDepartment(req, res, next) {
 
     const dept = await prisma.department.create({
       data: {
-        tenantId: req.tenantId,
+        tenantId: effectiveTenantId,
         branchId: branchId || null,
         code: normalizedCode,
         name: name.trim(),
@@ -637,7 +696,7 @@ export async function createDepartment(req, res, next) {
 
     await prisma.auditLog.create({
       data: {
-        tenantId: req.tenantId,
+        tenantId: effectiveTenantId,
         userId: req.userId || null,
         action: 'DEPARTMENT_CREATED',
         entityType: 'Department',

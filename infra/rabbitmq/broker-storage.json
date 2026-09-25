@@ -1871,11 +1871,33 @@
       },
       "status": "PUBLISHED",
       "createdAt": "2026-09-25T12:30:38.693Z"
+    },
+    {
+      "id": "msg-1790340101811-1duumad",
+      "exchange": "automobile.events.topic",
+      "routingKey": "demo.item.created",
+      "properties": {
+        "timestamp": 1790340101811,
+        "persistent": true
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T12:41:41.811Z"
+    },
+    {
+      "id": "msg-1790340101815-s7xous7",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.created",
+      "properties": {
+        "timestamp": 1790340101815,
+        "persistent": true
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T12:41:41.815Z"
     }
   ],
   "queueMessages": {
     "maintly.employee.sync": [],
     "maintly.employee.sync.dlq": []
   },
-  "savedAt": "2026-09-25T12:30:38.694Z"
+  "savedAt": "2026-09-25T12:41:41.817Z"
 }

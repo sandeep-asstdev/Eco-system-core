@@ -15,8 +15,9 @@ export function requirePlatformAdmin(req, res, next) {
 
 export function requireTenant(req, res, next) {
   if (req.isPlatformAdmin) {
-    if (req.query.tenantId) {
-      req.tenantId = req.query.tenantId;
+    const targetTenantId = req.headers['x-tenant-id'] || req.query.tenantId;
+    if (targetTenantId) {
+      req.tenantId = targetTenantId;
     }
     return next();
   }

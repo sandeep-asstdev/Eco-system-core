@@ -184,8 +184,13 @@ async function populateUserContext(userId, fallbackTenantId, tokenPayload, req, 
 
     req.user = user;
     req.userId = user.id;
-    req.tenantId = user.tenantId || fallbackTenantId;
-    req.isPlatformAdmin = user.isPlatformAdmin || tokenPayload.is_platform_admin === true;
+    const isPlatformAdmin = user.isPlatformAdmin || tokenPayload.is_platform_admin === true;
+    req.isPlatformAdmin = isPlatformAdmin;
+    if (isPlatformAdmin) {
+      req.tenantId = req.headers['x-tenant-id'] || user.tenantId || fallbackTenantId || null;
+    } else {
+      req.tenantId = user.tenantId || fallbackTenantId || null;
+    }
     req.permissions = Array.from(permissions);
     req.memberships = user.memberships;
     req.userRoleAssignments = user.userRoleAssignments;
