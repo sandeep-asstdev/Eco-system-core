@@ -62,6 +62,21 @@ export default function Dashboard({ onNavigate }) {
     loadDashboardData();
   }, [tenant]);
 
+  const handleLaunch = async (app) => {
+    if (user?.email) {
+      try {
+        await fetch('http://localhost:8080/realms/automobile-ecosystem/protocol/openid-connect/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email: user.email })
+        });
+      } catch (err) {
+        console.warn('[SSO] Pre-launch session sync warning:', err);
+      }
+    }
+  };
+
   if (isLoading) {
     return <LoadingSpinner text="Loading dealership governance analytics..." />;
   }
@@ -219,6 +234,7 @@ export default function Dashboard({ onNavigate }) {
                     href={app.baseUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => handleLaunch(app)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"
                   >
                     <span>Launch</span>

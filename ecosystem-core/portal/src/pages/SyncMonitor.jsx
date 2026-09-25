@@ -15,9 +15,10 @@ import {
   X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
+import { api } from '../services/api.js';
 
 export default function SyncMonitor() {
-  const { token, isPlatformAdmin } = useAuth();
+  const { isPlatformAdmin } = useAuth();
   const [overview, setOverview] = useState(null);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,25 +29,15 @@ export default function SyncMonitor() {
   const fetchOverview = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:4000/api/v1/sync/overview', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      const data = await res.json();
-      if (data.success) {
-        setOverview(data.data);
+      const res = await api.get('/sync/overview');
+      if (res.success && res.data) {
+        setOverview(res.data);
       }
 
       // Fetch recent outbox events
-      const evRes = await fetch('http://localhost:4000/api/v1/sync/outbox/events?limit=25', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      const evData = await evRes.json();
-      if (evData.success && evData.data?.events) {
-        setEvents(evData.data.events);
+      const evRes = await api.get('/sync/outbox/events?limit=25');
+      if (evRes.success && evRes.data?.events) {
+        setEvents(evRes.data.events);
       }
     } catch (err) {
       console.error('Error fetching sync overview:', err);
@@ -65,27 +56,21 @@ export default function SyncMonitor() {
     try {
       setActionLoading(true);
       setMessage({ type: 'info', text: 'Executing HRFlow to MAINTLY initial employee reconciliation...' });
-      const res = await fetch('http://localhost:4000/api/v1/sync/initial-sync', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ dryRun: false }),
-      });
-      const json = await res.json();
-      if (json.success) {
-        const r = json.data?.reconciliation;
+      const res = await api.post('/sync/initial-sync', { dryRun: false });
+      if (res.success) {
+        const r = res.data?.reconciliation;
         setMessage({
           type: 'success',
           text: `Synchronization complete! ${r?.newEmployeesImported || 0} imported, ${r?.employeesUpdated || 0} updated, ${r?.matchedExistingCount || 0} matched existing.`,
         });
       } else {
-        setMessage({ type: 'error', text: json.error || 'Failed to complete initial sync' });
+        const errText = res.error?.message || (typeof res.error === 'string' ? res.error : 'Failed to complete initial sync');
+        setMessage({ type: 'error', text: errText });
       }
       await fetchOverview();
     } catch (err) {
-      setMessage({ type: 'error', text: err.message });
+      const errText = err.message || (typeof err === 'string' ? err : 'Initial sync failed');
+      setMessage({ type: 'error', text: errText });
     } finally {
       setActionLoading(false);
     }
@@ -94,20 +79,15 @@ export default function SyncMonitor() {
   const retryFailedOutbox = async () => {
     try {
       setActionLoading(true);
-      const res = await fetch('http://localhost:4000/api/v1/sync/retry-failed', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      const json = await res.json();
+      const res = await api.post('/sync/retry-failed');
       setMessage({
         type: 'success',
-        text: `Queued ${json.data?.retriedCount || 0} failed events for immediate re-publishing.`,
+        text: `Queued ${res.data?.retriedCount || 0} failed events for immediate re-publishing.`,
       });
       await fetchOverview();
     } catch (err) {
-      setMessage({ type: 'error', text: err.message });
+      const errText = err.message || (typeof err === 'string' ? err : 'Retry failed');
+      setMessage({ type: 'error', text: errText });
     } finally {
       setActionLoading(false);
     }
@@ -116,20 +96,15 @@ export default function SyncMonitor() {
   const replayDLQ = async () => {
     try {
       setActionLoading(true);
-      const res = await fetch('http://localhost:4000/api/v1/sync/replay-dlq', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      const json = await res.json();
+      const res = await api.post('/sync/replay-dlq');
       setMessage({
         type: 'success',
-        text: `Replayed ${json.data?.replayedCount || 0} dead-lettered messages back to topic exchange.`,
+        text: `Replayed ${res.data?.replayedCount || 0} dead-lettered messages back to topic exchange.`,
       });
       await fetchOverview();
     } catch (err) {
-      setMessage({ type: 'error', text: err.message });
+      const errText = err.message || (typeof err === 'string' ? err : 'DLQ replay failed');
+      setMessage({ type: 'error', text: errText });
     } finally {
       setActionLoading(false);
     }
@@ -205,7 +180,7 @@ export default function SyncMonitor() {
           message.type === 'error' ? 'bg-rose-50 text-rose-800 border-rose-200' :
           'bg-blue-50 text-blue-800 border-blue-200'
         }`}>
-          <span>{message.text}</span>
+          <span>{typeof message.text === 'object' ? (message.text?.message || JSON.stringify(message.text)) : String(message.text || '')}</span>
           <button onClick={() => setMessage(null)} className="font-bold underline ml-4">Dismiss</button>
         </div>
       )}

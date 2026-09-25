@@ -165,14 +165,16 @@ function parseBody(req) {
   });
 }
 
-function setCorsHeaders(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+function setCorsHeaders(req, res) {
+  const origin = req.headers?.origin || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
 }
 
 const server = http.createServer(async (req, res) => {
-  setCorsHeaders(res);
+  setCorsHeaders(req, res);
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
     res.end();
@@ -551,6 +553,47 @@ const server = http.createServer(async (req, res) => {
       sub: 'authenticated-user',
       realm: REALM
     }));
+    return;
+  }
+
+  // 5.5. Session Bridge Endpoint (Sync Keycloak session cookie from Portal)
+  if (pathname === `/realms/${REALM}/protocol/openid-connect/session` && req.method === 'POST') {
+    const body = await parseBody(req);
+    const { email } = body;
+    if (!email) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'email required' }));
+      return;
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { email: email.toLowerCase().trim() },
+      include: {
+        userRoleAssignments: { include: { role: { include: { rolePermissions: { include: { permission: true } } } } } },
+        memberships: { include: { branch: true, department: true } },
+        tenant: true
+      }
+    });
+
+    if (!user || user.status === 'SUSPENDED') {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'User not found or suspended' }));
+      return;
+    }
+
+    const sessionId = crypto.randomUUID();
+    activeSessions.set(sessionId, {
+      sessionId,
+      user,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 24 * 3600 * 1000
+    });
+
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Set-Cookie': `KEYCLOAK_SESSION=${sessionId}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`
+    });
+    res.end(JSON.stringify({ success: true, sessionId }));
     return;
   }
 

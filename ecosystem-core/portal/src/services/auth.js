@@ -114,6 +114,19 @@ export const authService = {
       if (res.data.tenant?.id) {
         api.setTenantId(res.data.tenant.id);
       }
+
+      // Synchronize Keycloak SSO session so application launches bypass login prompts
+      try {
+        await fetch(`${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email: res.data.user.email })
+        });
+      } catch (err) {
+        console.warn('[SSO] Keycloak session synchronization warning:', err.message);
+      }
+
       return res.data;
     }
     throw new Error(res.error?.message || 'Login failed');

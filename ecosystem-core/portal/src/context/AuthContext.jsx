@@ -20,6 +20,7 @@ export function AuthProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
 
+  const [token, setToken] = useState(() => localStorage.getItem('ecosystem_token'));
   const [memberships, setMemberships] = useState([]);
   const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState([]);
@@ -75,6 +76,7 @@ export function AuthProvider({ children }) {
     setIsLoading(true);
     try {
       const data = await authService.directLogin(email, password);
+      setToken(data.token);
       setUser(data.user);
       setTenant(data.tenant);
       setMemberships(data.memberships || []);
@@ -110,6 +112,7 @@ export function AuthProvider({ children }) {
     setIsLoading(true);
     try {
       const data = await authService.handleKeycloakCallback(code, state);
+      setToken(data.token);
       setUser(data.user);
       setTenant(data.tenant);
       setMemberships(data.memberships || []);
@@ -139,6 +142,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+    setToken(null);
     setUser(null);
     setTenant(null);
     setActiveBranch(null);
@@ -180,6 +184,7 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider
       value={{
+        token,
         user,
         tenant,
         activeBranch,

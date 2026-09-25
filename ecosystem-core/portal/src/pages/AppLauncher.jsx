@@ -83,6 +83,21 @@ export default function AppLauncher() {
     loadAuthorizedApps();
   }, [tenant, user]);
 
+  const handleLaunch = async (app) => {
+    if (user?.email) {
+      try {
+        await fetch('http://localhost:8080/realms/automobile-ecosystem/protocol/openid-connect/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email: user.email })
+        });
+      } catch (err) {
+        console.warn('[SSO] Pre-launch session sync warning:', err);
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Banner */}
@@ -196,6 +211,7 @@ export default function AppLauncher() {
                     href={app.baseUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => handleLaunch(app)}
                     className={`inline-flex items-center gap-2 px-4 py-2 text-white font-semibold text-xs rounded-xl shadow-sm transition ${
                       isMaintenance 
                         ? 'bg-amber-600 hover:bg-amber-700' 
