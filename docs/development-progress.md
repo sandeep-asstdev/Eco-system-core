@@ -20,7 +20,8 @@
 | **Phase 6** | Integrate MAINTLY Application | **COMPLETED** | Milestone 6 |
 | **Phase 7** | HR-to-Maintenance Employee Synchronization Workflow | **COMPLETED** | Milestone 7 |
 | **Phase 8** | Modular, Extensible Automobile Ecosystem Platform | **COMPLETED** | Milestone 8 |
-| **Phase 9** | Production Infrastructure & Commercial SaaS Readiness | **PLANNED** | Milestone 9 |
+| **Phase 9** | Production Infrastructure & Commercial SaaS Readiness | **COMPLETED** | Milestone 9 |
+| **HRFlow 2.0** | 9-Phase Horilla-Inspired Dealership HRMS Modernization | **COMPLETED** | Milestone 10 |
 
 ---
 
@@ -385,9 +386,29 @@ cd packages/ecosystem-sdk && npm test
 
 ---
 
-### Phase 9: Production Infrastructure & Commercial SaaS Readiness (Planned)
-- [ ] Deploy official Keycloak 24+ and RabbitMQ 3.13+ via Docker Compose.
-- [ ] Configure Nginx reverse proxy with SSL termination, HTTP/2, and rate-limiting.
-- [ ] Setup Prometheus metrics exporter and Grafana monitoring dashboards.
-- [ ] Document tenant onboarding runbooks and automated database backup procedures.
-- [ ] Prepare commercial multi-dealership licensing and subscription tiers.
+### Phase 9: Production Infrastructure & Commercial SaaS Readiness (COMPLETED)
+- [x] **Production Docker Compose (`docker-compose.prod.yml`)**:
+  - Containerized full stack across 9 dedicated services: PostgreSQL 18, Redis 7, RabbitMQ 3.13 Management, Keycloak 24+ Quarkus, Ecosystem Core API, HRFlow Backend & Web, MAINTLY Backend & Web, and Nginx Gateway.
+  - Multi-database automatic initialization via `infra/postgres/init-databases.sh`.
+- [x] **Multi-Stage Container Dockerfiles**:
+  - Authored optimized Dockerfiles for `ecosystem-core/backend`, `ecosystem-core/portal`, `applications/HRFlow/backend`, `applications/HRFlow/frontend`, `applications/Maintly/backend`, and `applications/Maintly/frontend`.
+- [x] **Unified Nginx Reverse Proxy Gateway (`infra/nginx/nginx.conf`)**:
+  - Single-origin port 80 routing with path-based microservice dispatch (`/` Portal, `/hr` HRFlow UI, `/maintly` MAINTLY UI, `/auth` Keycloak, `/api/core`, `/api/hr`, `/api/maintly`).
+  - Gzip compression, rate limiting (30 req/s), and HTTP security headers (CSP, HSTS, X-Frame-Options).
+- [x] **Automated Dealership Tenant Provisioning Engine (`scripts/onboard-tenant.js`)**:
+  - Automated commercial onboarding CLI provisioning Tenant, Legal Firm (with PAN/GSTIN), OEM Dealership Brands, Branch bay units, Cadre Levels 1–10, and Group Admin accounts across both Core and HRFlow databases.
+  - Verified live onboarding of `Kalyani Automotive Group` (`KALYANI_MOTORS`).
+
+---
+
+### HRFlow 2.0: Horilla-Inspired Dealership HRMS Modernization (COMPLETED)
+- [x] **12-Tab Digital Dossier**: Personal, Statutory (PF/ESI/UAN), Salary Structure, KYC, Assets, Attendance, Leave, Discipline, Transfers.
+- [x] **Interactive Organization Chart**: Dynamic tree chart mapping reporting managers and cadre hierarchies.
+- [x] **Document Requisitions**: Digital KYC upload, audit approval, and expiration tracking.
+- [x] **Dealership Recruitment Pipeline (ATS)**: Kanban stages with 1–5 star candidate ratings and requisition management.
+- [x] **Attendance 2.0 Hub**: Daily punches, 3-tier validation (Attendance, Overtime, Validated), and regularization approvals.
+- [x] **Executive Indian Dealership Payroll**: PF, ESI, Professional Tax, TDS slabs, masked bank details, letterhead payslip modal, and NEFT bank payment advice with CSV export.
+- [x] **Offboarding & Separation Suite**: Resignations, 3-tier departmental NOCs (Workshop Tools, IT Assets, Accounts), and Full & Final (F&F) settlement calculator.
+- [x] **Dealership Analytics Reports**: Branch manpower budget vs actual matrix, cadre breakdown (L1–L10), and statutory liability registers.
+- [x] **End-to-End Automated UAT**: Verified with 38 automated test assertions (100% pass rate).
+

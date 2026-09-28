@@ -1,0 +1,204 @@
+version: '3.8'
+
+services:
+  # ========================================================
+  # 1. DATABASE & CACHING LAYER
+  # ========================================================
+  postgres:
+    image: postgres:18-alpine
+    container_name: ecosystem_postgres18
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ecosystem_core_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
+    ports:
+      - "5433:5432"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ecosystem_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: ecosystem_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+    networks:
+      - ecosystem_net
+
+  # ========================================================
+  # 2. MESSAGE BROKER & EVENT BUS
+  # ========================================================
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: ecosystem_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: always
+    networks:
+      - ecosystem_net
+
+  # ========================================================
+  # 3. IDENTITY & ACCESS MANAGEMENT (KEYCLOAK 24+)
+  # ========================================================
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.5
+    container_name: ecosystem_keycloak
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db
+      KC_DB_USERNAME: ${DB_USER:-postgres}
+      KC_DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      KC_HOSTNAME: localhost
+      KC_PROXY_HEADERS: xforwarded
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./infra/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - ecosystem_net
+
+  # ========================================================
+  # 4. BACKEND MICROSERVICES
+  # ========================================================
+  ecosystem-core-api:
+    build:
+      context: ./ecosystem-core/backend
+      dockerfile: Dockerfile
+    container_name: ecosystem_core_api
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/ecosystem_core_db?schema=public
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: automobile-ecosystem
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - ecosystem_net
+
+  hrflow-api:
+    build:
+      context: ./applications/HRFlow/backend
+      dockerfile: Dockerfile
+    container_name: hrflow_api
+    environment:
+      PORT: 5000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/hrflow_db?schema=public
+      ECOSYSTEM_CORE_URL: http://ecosystem-core-api:4000
+      KEYCLOAK_URL: http://keycloak:8080
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - ecosystem_net
+
+  maintly-api:
+    build:
+      context: ./applications/Maintly/backend
+      dockerfile: Dockerfile
+    container_name: maintly_api
+    environment:
+      PORT: 5002
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/maintly_db?schema=public
+      ECOSYSTEM_CORE_URL: http://ecosystem-core-api:4000
+      KEYCLOAK_URL: http://keycloak:8080
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - ecosystem_net
+
+  # ========================================================
+  # 5. FRONTEND WEB APPLICATIONS
+  # ========================================================
+  ecosystem-portal:
+    build:
+      context: ./ecosystem-core/portal
+      dockerfile: Dockerfile
+    container_name: ecosystem_portal
+    restart: always
+    networks:
+      - ecosystem_net
+
+  hrflow-web:
+    build:
+      context: ./applications/HRFlow/frontend
+      dockerfile: Dockerfile
+    container_name: hrflow_web
+    restart: always
+    networks:
+      - ecosystem_net
+
+  maintly-web:
+    build:
+      context: ./applications/Maintly/frontend
+      dockerfile: Dockerfile
+    container_name: maintly_web
+    restart: always
+    networks:
+      - ecosystem_net
+
+  # ========================================================
+  # 6. UNIFIED NGINX REVERSE PROXY GATEWAY
+  # ========================================================
+  nginx-gateway:
+    image: nginx:alpine
+    container_name: ecosystem_nginx_gateway
+    ports:
+      - "80:80"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - ecosystem-portal
+      - hrflow-web
+      - maintly-web
+      - ecosystem-core-api
+      - hrflow-api
+      - maintly-api
+      - keycloak
+    restart: always
+    networks:
+      - ecosystem_net
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+
+networks:
+  ecosystem_net:
+    driver: bridge
