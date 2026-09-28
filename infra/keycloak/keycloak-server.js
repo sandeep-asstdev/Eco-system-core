@@ -90,6 +90,7 @@ const prisma = new PrismaClient({
 // In-Memory Authorization Codes & Sessions
 const authCodes = new Map();
 const activeSessions = new Map();
+const recentCodeExchanges = new Map();
 
 // Helpers for PKCE, Cookies and JWT
 function base64UrlEncode(str) {
@@ -424,6 +425,14 @@ const server = http.createServer(async (req, res) => {
 
     if (grantType === 'authorization_code') {
       const { code, code_verifier, redirect_uri } = body;
+
+      const recent = recentCodeExchanges.get(code);
+      if (recent && Date.now() < recent.expiresAt) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(recent.data));
+        return;
+      }
+
       const codeEntry = authCodes.get(code);
 
       if (!codeEntry) {
@@ -539,8 +548,7 @@ const server = http.createServer(async (req, res) => {
     const accessToken = signJwt(payload, 3600);
     const refreshToken = signJwt({ sub: user.id, type: 'refresh' }, 86400 * 7);
 
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
+    const tokenResponse = {
       access_token: accessToken,
       expires_in: 3600,
       refresh_expires_in: 604800,
@@ -549,7 +557,17 @@ const server = http.createServer(async (req, res) => {
       'not-before-policy': 0,
       session_state: crypto.randomUUID(),
       scope
-    }));
+    };
+
+    if (body.code) {
+      recentCodeExchanges.set(body.code, {
+        data: tokenResponse,
+        expiresAt: Date.now() + 15000
+      });
+    }
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(tokenResponse));
     return;
   }
 

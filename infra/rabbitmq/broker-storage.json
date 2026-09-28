@@ -1893,11 +1893,1806 @@
       },
       "status": "PUBLISHED",
       "createdAt": "2026-09-25T12:41:41.815Z"
+    },
+    {
+      "id": "msg-1790341301323-imcxxr2",
+      "exchange": "automobile.events.topic",
+      "routingKey": "demo.item.created",
+      "properties": {
+        "timestamp": 1790341301323,
+        "persistent": true
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T13:01:41.323Z"
+    },
+    {
+      "id": "msg-1790341301328-fgyg5ac",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.created",
+      "properties": {
+        "timestamp": 1790341301328,
+        "persistent": true
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-25T13:01:41.328Z"
+    },
+    {
+      "id": "56832e78-eccd-461e-b21e-2bea2e07940d",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "tech.sync-21202@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "56832e78-eccd-461e-b21e-2bea2e07940d",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-26T05:00:21.251Z",
+        "department": "Service",
+        "designation": "Senior Diagnostic Technician",
+        "employeeCode": "EMP-1015",
+        "hrEmployeeId": "4d5a439c-4976-468f-b3df-cf9ce9071981",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790398821252,
+        "persistent": true,
+        "messageId": "56832e78-eccd-461e-b21e-2bea2e07940d",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "4d5a439c-4976-468f-b3df-cf9ce9071981",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T05:00:21.884Z"
+    },
+    {
+      "id": "e37d6a7d-9420-4372-a678-09118c529ebb",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "tech.sync-21202@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "e37d6a7d-9420-4372-a678-09118c529ebb",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "4592041e-fe7d-473e-89ee-54ebdc630e50"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-26T05:00:25.073Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1015",
+        "hrEmployeeId": "4d5a439c-4976-468f-b3df-cf9ce9071981",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790398825074,
+        "persistent": true,
+        "messageId": "e37d6a7d-9420-4372-a678-09118c529ebb",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "4d5a439c-4976-468f-b3df-cf9ce9071981",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T05:00:25.887Z"
+    },
+    {
+      "id": "8ca69c59-5b01-4a40-a080-ef6a7840f4c4",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.transferred",
+      "content": {
+        "email": "tech.sync-21202@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "8ca69c59-5b01-4a40-a080-ef6a7840f4c4",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "reason": "Promoted to Lead Technician at central workshop",
+          "toBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c",
+          "fromBranchId": "4592041e-fe7d-473e-89ee-54ebdc630e50"
+        },
+        "eventType": "employee.transferred",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-26T05:00:28.099Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1015",
+        "hrEmployeeId": "4d5a439c-4976-468f-b3df-cf9ce9071981",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790398828100,
+        "persistent": true,
+        "messageId": "8ca69c59-5b01-4a40-a080-ef6a7840f4c4",
+        "type": "employee.transferred",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "4d5a439c-4976-468f-b3df-cf9ce9071981",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T05:00:29.914Z"
+    },
+    {
+      "id": "bb64cde5-f39f-429f-a426-e38796f28c64",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.deactivated",
+      "content": {
+        "email": "tech.sync-21202@belladgroup.com",
+        "phone": "9999888877",
+        "status": "RESIGNED",
+        "eventId": "bb64cde5-f39f-429f-a426-e38796f28c64",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "reason": "Sabbatical leave",
+          "previousStatus": "ACTIVE"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-26T05:00:31.120Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1015",
+        "hrEmployeeId": "4d5a439c-4976-468f-b3df-cf9ce9071981",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790398831121,
+        "persistent": true,
+        "messageId": "bb64cde5-f39f-429f-a426-e38796f28c64",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "4d5a439c-4976-468f-b3df-cf9ce9071981",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T05:00:31.924Z"
+    },
+    {
+      "id": "f1aedbd7-d69f-4c40-9d47-e99c222eb511",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.reactivated",
+      "content": {
+        "email": "tech.sync-21202@belladgroup.com",
+        "phone": "9999888877",
+        "status": "ACTIVE",
+        "eventId": "f1aedbd7-d69f-4c40-9d47-e99c222eb511",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "previousStatus": "RESIGNED"
+        },
+        "eventType": "employee.reactivated",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-26T05:00:34.147Z",
+        "department": "Service",
+        "designation": "Master Diagnostic Technician",
+        "employeeCode": "EMP-1015",
+        "hrEmployeeId": "4d5a439c-4976-468f-b3df-cf9ce9071981",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790398834148,
+        "persistent": true,
+        "messageId": "f1aedbd7-d69f-4c40-9d47-e99c222eb511",
+        "type": "employee.reactivated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "4d5a439c-4976-468f-b3df-cf9ce9071981",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T05:00:35.953Z"
+    },
+    {
+      "id": "56832e78-eccd-461e-b21e-2bea2e07940d",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "tech.sync-21202@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "56832e78-eccd-461e-b21e-2bea2e07940d",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2026-09-26T05:00:21.251Z",
+        "department": "Service",
+        "designation": "Senior Diagnostic Technician",
+        "employeeCode": "EMP-1015",
+        "hrEmployeeId": "4d5a439c-4976-468f-b3df-cf9ce9071981",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790398837172,
+        "persistent": true,
+        "messageId": "56832e78-eccd-461e-b21e-2bea2e07940d"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T05:00:37.172Z"
+    },
+    {
+      "id": "stale-1790398839680",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "tech.sync-21202@belladgroup.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "eventId": "stale-1790398839680",
+        "version": "1.0.0",
+        "fullName": "Suresh Kulkarni",
+        "lastName": "Kulkarni",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Suresh",
+        "timestamp": "2021-01-01T00:00:00.000Z",
+        "department": "Service",
+        "designation": "Outdated Stale 2021 Title",
+        "employeeCode": "EMP-1015",
+        "hrEmployeeId": "4d5a439c-4976-468f-b3df-cf9ce9071981",
+        "centralUserId": null,
+        "centralBranchId": "4350dbb5-8d55-405c-9456-9de567e356c4",
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790398839681,
+        "persistent": true,
+        "messageId": "stale-1790398839680"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T05:00:39.681Z"
+    },
+    {
+      "id": "rogue-1790398842190",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.rogue.employee.created",
+      "content": {
+        "eventId": "rogue-1790398842190",
+        "eventType": "employee.created",
+        "centralTenantId": "00000000-0000-0000-0000-000000000000",
+        "hrEmployeeId": "rogue-emp-999",
+        "employeeCode": "ROGUE-999",
+        "firstName": "Rogue",
+        "lastName": "User",
+        "email": "rogue.user@foreigndealer.com",
+        "status": "ACTIVE"
+      },
+      "properties": {
+        "timestamp": 1790398842192,
+        "persistent": true,
+        "messageId": "rogue-1790398842190"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T05:00:42.192Z"
+    },
+    {
+      "id": "dlq-test-1790398844701",
+      "exchange": "automobile.events.dlx",
+      "routingKey": "maintly.employee.sync.dlq",
+      "content": {
+        "eventId": "dlq-test-1790398844701",
+        "eventType": "employee.created",
+        "reason": "Simulated failure for DLQ verification"
+      },
+      "properties": {
+        "timestamp": 1790398844702,
+        "persistent": true,
+        "messageId": "dlq-test-1790398844701"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T05:00:44.702Z"
+    },
+    {
+      "id": "dlq-test-1790398844701",
+      "exchange": "automobile.events.topic",
+      "routingKey": "maintly.employee.sync.dlq",
+      "content": {
+        "eventId": "dlq-test-1790398844701",
+        "eventType": "employee.created",
+        "reason": "Simulated failure for DLQ verification"
+      },
+      "properties": {
+        "timestamp": 1790398844702,
+        "persistent": true,
+        "messageId": "dlq-test-1790398844701"
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T05:00:44.723Z"
+    },
+    {
+      "id": "ad795dad-62fa-406d-9433-9444f61a6be4",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "legacy.holder.1790414460078@belladgroup.com",
+        "phone": null,
+        "status": "ACTIVE",
+        "eventId": "ad795dad-62fa-406d-9433-9444f61a6be4",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T09:21:00.102Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "57dec92c-599d-4109-bd06-34cb83723a97",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790414460103,
+        "persistent": true,
+        "messageId": "ad795dad-62fa-406d-9433-9444f61a6be4",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "57dec92c-599d-4109-bd06-34cb83723a97",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T09:21:00.602Z"
+    },
+    {
+      "id": "09d786eb-a791-4ee0-a183-08293a666ad2",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "legacy.holder.1790414460078@belladgroup.com",
+        "phone": "+91 99999 88888",
+        "status": "ACTIVE",
+        "eventId": "09d786eb-a791-4ee0-a183-08293a666ad2",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T09:21:00.121Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "57dec92c-599d-4109-bd06-34cb83723a97",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790414460122,
+        "persistent": true,
+        "messageId": "09d786eb-a791-4ee0-a183-08293a666ad2",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "57dec92c-599d-4109-bd06-34cb83723a97",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T09:21:00.611Z"
+    },
+    {
+      "id": "dc1473b4-0eb2-4d11-802e-98b5d62d45fa",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.deactivated",
+      "content": {
+        "email": "emp.rahul@hrflow.com",
+        "phone": "+91 98201 12345",
+        "status": "RESIGNED",
+        "eventId": "dc1473b4-0eb2-4d11-802e-98b5d62d45fa",
+        "version": "1.0.0",
+        "fullName": "Rahul Sharma",
+        "lastName": "Sharma",
+        "metadata": {
+          "reason": "Relocating to another city for higher education.",
+          "source": "RESIGNATION",
+          "resignationId": "b25c15ee-d01a-4a08-b771-7a2b728a1db0"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Rahul",
+        "timestamp": "2026-09-26T09:21:01.629Z",
+        "department": "Engineering",
+        "designation": "Software Systems Engineer",
+        "employeeCode": "APEX-1001",
+        "hrEmployeeId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790414461630,
+        "persistent": true,
+        "messageId": "dc1473b4-0eb2-4d11-802e-98b5d62d45fa",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T09:21:02.602Z"
+    },
+    {
+      "id": "1da2e7db-4e2f-41f7-a62f-f3f2d3c7aae4",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "legacy.holder.1790415255261@belladgroup.com",
+        "phone": null,
+        "status": "ACTIVE",
+        "eventId": "1da2e7db-4e2f-41f7-a62f-f3f2d3c7aae4",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T09:34:15.281Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "3241634c-939f-42d3-b3ff-86901bc4c055",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790415255282,
+        "persistent": true,
+        "messageId": "1da2e7db-4e2f-41f7-a62f-f3f2d3c7aae4",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "3241634c-939f-42d3-b3ff-86901bc4c055",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T09:34:16.477Z"
+    },
+    {
+      "id": "ab6a46db-1be4-4fe7-a682-bd2b95f55a2d",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "legacy.holder.1790415255261@belladgroup.com",
+        "phone": "+91 99999 88888",
+        "status": "ACTIVE",
+        "eventId": "ab6a46db-1be4-4fe7-a682-bd2b95f55a2d",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T09:34:15.303Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "3241634c-939f-42d3-b3ff-86901bc4c055",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790415255304,
+        "persistent": true,
+        "messageId": "ab6a46db-1be4-4fe7-a682-bd2b95f55a2d",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "3241634c-939f-42d3-b3ff-86901bc4c055",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T09:34:16.575Z"
+    },
+    {
+      "id": "82b2160b-6965-40ea-98f0-bcabae61538f",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.deactivated",
+      "content": {
+        "email": "emp.rahul@hrflow.com",
+        "phone": "+91 98201 12345",
+        "status": "RESIGNED",
+        "eventId": "82b2160b-6965-40ea-98f0-bcabae61538f",
+        "version": "1.0.0",
+        "fullName": "Rahul Sharma",
+        "lastName": "Sharma",
+        "metadata": {
+          "reason": "Relocating to another city for higher education.",
+          "source": "RESIGNATION",
+          "resignationId": "3ef7a364-af4d-473f-b58c-c3d9c74dd38b"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Rahul",
+        "timestamp": "2026-09-26T09:34:17.041Z",
+        "department": "Engineering",
+        "designation": "Software Systems Engineer",
+        "employeeCode": "APEX-1001",
+        "hrEmployeeId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790415257042,
+        "persistent": true,
+        "messageId": "82b2160b-6965-40ea-98f0-bcabae61538f",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T09:34:18.452Z"
+    },
+    {
+      "id": "a7d17f2f-ab2c-45db-8c50-61658e32c6a2",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "legacy.holder.1790416338066@belladgroup.com",
+        "phone": null,
+        "status": "ACTIVE",
+        "eventId": "a7d17f2f-ab2c-45db-8c50-61658e32c6a2",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T09:52:18.081Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "4b7e0c57-4d04-495d-a991-b19ff4bbaa08",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790416338082,
+        "persistent": true,
+        "messageId": "a7d17f2f-ab2c-45db-8c50-61658e32c6a2",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "4b7e0c57-4d04-495d-a991-b19ff4bbaa08",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T09:52:19.605Z"
+    },
+    {
+      "id": "345ffba4-3477-4fde-8639-278eaa1e7029",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "legacy.holder.1790416338066@belladgroup.com",
+        "phone": "+91 99999 88888",
+        "status": "ACTIVE",
+        "eventId": "345ffba4-3477-4fde-8639-278eaa1e7029",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T09:52:18.102Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "4b7e0c57-4d04-495d-a991-b19ff4bbaa08",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790416338103,
+        "persistent": true,
+        "messageId": "345ffba4-3477-4fde-8639-278eaa1e7029",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "4b7e0c57-4d04-495d-a991-b19ff4bbaa08",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T09:52:19.612Z"
+    },
+    {
+      "id": "aa75e4f9-a63c-4f68-87e9-bf69f53f1cc9",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.deactivated",
+      "content": {
+        "email": "emp.rahul@hrflow.com",
+        "phone": "+91 98201 12345",
+        "status": "RESIGNED",
+        "eventId": "aa75e4f9-a63c-4f68-87e9-bf69f53f1cc9",
+        "version": "1.0.0",
+        "fullName": "Rahul Sharma",
+        "lastName": "Sharma",
+        "metadata": {
+          "reason": "Relocating to another city for higher education.",
+          "source": "RESIGNATION",
+          "resignationId": "d5bde679-72ed-407d-a5ab-7b9421ce581a"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Rahul",
+        "timestamp": "2026-09-26T09:52:19.621Z",
+        "department": "Engineering",
+        "designation": "Software Systems Engineer",
+        "employeeCode": "APEX-1001",
+        "hrEmployeeId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790416339622,
+        "persistent": true,
+        "messageId": "aa75e4f9-a63c-4f68-87e9-bf69f53f1cc9",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T09:52:21.604Z"
+    },
+    {
+      "id": "c36b8434-aed5-460f-9549-0ff6ee9faf12",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "legacy.holder.1790416630943@belladgroup.com",
+        "phone": null,
+        "status": "ACTIVE",
+        "eventId": "c36b8434-aed5-460f-9549-0ff6ee9faf12",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T09:57:10.965Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "7e5323e7-a040-46da-ad65-9d93d7092e5c",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790416630966,
+        "persistent": true,
+        "messageId": "c36b8434-aed5-460f-9549-0ff6ee9faf12",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "7e5323e7-a040-46da-ad65-9d93d7092e5c",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T09:57:12.132Z"
+    },
+    {
+      "id": "0fb64a91-55e3-4285-b38b-51157df1f68a",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "legacy.holder.1790416630943@belladgroup.com",
+        "phone": "+91 99999 88888",
+        "status": "ACTIVE",
+        "eventId": "0fb64a91-55e3-4285-b38b-51157df1f68a",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T09:57:10.989Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "7e5323e7-a040-46da-ad65-9d93d7092e5c",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790416630990,
+        "persistent": true,
+        "messageId": "0fb64a91-55e3-4285-b38b-51157df1f68a",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "7e5323e7-a040-46da-ad65-9d93d7092e5c",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T09:57:12.141Z"
+    },
+    {
+      "id": "2ac2a7bd-fd02-4a49-b092-0bd3ce283a7f",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.deactivated",
+      "content": {
+        "email": "emp.rahul@hrflow.com",
+        "phone": "+91 98201 12345",
+        "status": "RESIGNED",
+        "eventId": "2ac2a7bd-fd02-4a49-b092-0bd3ce283a7f",
+        "version": "1.0.0",
+        "fullName": "Rahul Sharma",
+        "lastName": "Sharma",
+        "metadata": {
+          "reason": "Relocating to another city for higher education.",
+          "source": "RESIGNATION",
+          "resignationId": "5284a9d3-3d93-4db4-83e8-3f1843c2dd25"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Rahul",
+        "timestamp": "2026-09-26T09:57:12.541Z",
+        "department": "Engineering",
+        "designation": "Software Systems Engineer",
+        "employeeCode": "APEX-1001",
+        "hrEmployeeId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790416632542,
+        "persistent": true,
+        "messageId": "2ac2a7bd-fd02-4a49-b092-0bd3ce283a7f",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T09:57:14.115Z"
+    },
+    {
+      "id": "e9723723-acd4-40af-95c4-d74caba8ecea",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "legacy.holder.1790416921729@belladgroup.com",
+        "phone": null,
+        "status": "ACTIVE",
+        "eventId": "e9723723-acd4-40af-95c4-d74caba8ecea",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T10:02:01.756Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "03c92614-aa64-4382-ac0b-e8275757590b",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790416921757,
+        "persistent": true,
+        "messageId": "e9723723-acd4-40af-95c4-d74caba8ecea",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "03c92614-aa64-4382-ac0b-e8275757590b",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:02:03.009Z"
+    },
+    {
+      "id": "4a9c6f6d-5127-4503-a327-5edf6cfcb8df",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "legacy.holder.1790416921729@belladgroup.com",
+        "phone": "+91 99999 88888",
+        "status": "ACTIVE",
+        "eventId": "4a9c6f6d-5127-4503-a327-5edf6cfcb8df",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T10:02:01.804Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "03c92614-aa64-4382-ac0b-e8275757590b",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790416921805,
+        "persistent": true,
+        "messageId": "4a9c6f6d-5127-4503-a327-5edf6cfcb8df",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "03c92614-aa64-4382-ac0b-e8275757590b",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:02:03.039Z"
+    },
+    {
+      "id": "7c155cb5-9260-4c83-a509-5ebf4c7f18d7",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.deactivated",
+      "content": {
+        "email": "emp.rahul@hrflow.com",
+        "phone": "+91 98201 12345",
+        "status": "RESIGNED",
+        "eventId": "7c155cb5-9260-4c83-a509-5ebf4c7f18d7",
+        "version": "1.0.0",
+        "fullName": "Rahul Sharma",
+        "lastName": "Sharma",
+        "metadata": {
+          "reason": "Relocating to another city for higher education.",
+          "source": "RESIGNATION",
+          "resignationId": "1a626e66-9cbd-498f-910f-bcebec0413b2"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Rahul",
+        "timestamp": "2026-09-26T10:02:03.488Z",
+        "department": "Engineering",
+        "designation": "Software Systems Engineer",
+        "employeeCode": "APEX-1001",
+        "hrEmployeeId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790416923488,
+        "persistent": true,
+        "messageId": "7c155cb5-9260-4c83-a509-5ebf4c7f18d7",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:02:04.966Z"
+    },
+    {
+      "id": "18fdaec0-493a-4733-b608-657d0afe73a8",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "legacy.holder.1790417697558@belladgroup.com",
+        "phone": null,
+        "status": "ACTIVE",
+        "eventId": "18fdaec0-493a-4733-b608-657d0afe73a8",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T10:14:57.575Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "b833cc14-0796-4888-b31d-7537cac17a83",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790417697576,
+        "persistent": true,
+        "messageId": "18fdaec0-493a-4733-b608-657d0afe73a8",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "b833cc14-0796-4888-b31d-7537cac17a83",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:14:58.670Z"
+    },
+    {
+      "id": "d51e79e5-b8da-4b3f-aab0-daa73653230d",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "legacy.holder.1790417697558@belladgroup.com",
+        "phone": "+91 99999 88888",
+        "status": "ACTIVE",
+        "eventId": "d51e79e5-b8da-4b3f-aab0-daa73653230d",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T10:14:57.598Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "b833cc14-0796-4888-b31d-7537cac17a83",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790417697600,
+        "persistent": true,
+        "messageId": "d51e79e5-b8da-4b3f-aab0-daa73653230d",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "b833cc14-0796-4888-b31d-7537cac17a83",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:14:58.748Z"
+    },
+    {
+      "id": "2d317400-8109-4adf-9d86-1a4772b2424e",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.deactivated",
+      "content": {
+        "email": "emp.rahul@hrflow.com",
+        "phone": "+91 98201 12345",
+        "status": "RESIGNED",
+        "eventId": "2d317400-8109-4adf-9d86-1a4772b2424e",
+        "version": "1.0.0",
+        "fullName": "Rahul Sharma",
+        "lastName": "Sharma",
+        "metadata": {
+          "reason": "Relocating to another city for higher education.",
+          "source": "RESIGNATION",
+          "resignationId": "556cc078-10fd-45f0-a4df-2e9bd3cbda7d"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Rahul",
+        "timestamp": "2026-09-26T10:14:59.283Z",
+        "department": "Engineering",
+        "designation": "Software Systems Engineer",
+        "employeeCode": "APEX-1001",
+        "hrEmployeeId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790417699285,
+        "persistent": true,
+        "messageId": "2d317400-8109-4adf-9d86-1a4772b2424e",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:15:00.673Z"
+    },
+    {
+      "id": "9e22c23c-6094-41e7-a1bd-ff66ede8ff2c",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "legacy.holder.1790417947673@belladgroup.com",
+        "phone": null,
+        "status": "ACTIVE",
+        "eventId": "9e22c23c-6094-41e7-a1bd-ff66ede8ff2c",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T10:19:07.691Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "96660fcc-d8c0-4b6e-9707-2ac60a689763",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790417947692,
+        "persistent": true,
+        "messageId": "9e22c23c-6094-41e7-a1bd-ff66ede8ff2c",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "96660fcc-d8c0-4b6e-9707-2ac60a689763",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:19:07.815Z"
+    },
+    {
+      "id": "5a6a9fc2-ada5-4ed7-bd0b-f7e6251ce37c",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "legacy.holder.1790417947673@belladgroup.com",
+        "phone": "+91 99999 88888",
+        "status": "ACTIVE",
+        "eventId": "5a6a9fc2-ada5-4ed7-bd0b-f7e6251ce37c",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T10:19:07.716Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "96660fcc-d8c0-4b6e-9707-2ac60a689763",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790417947717,
+        "persistent": true,
+        "messageId": "5a6a9fc2-ada5-4ed7-bd0b-f7e6251ce37c",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "96660fcc-d8c0-4b6e-9707-2ac60a689763",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:19:07.822Z"
+    },
+    {
+      "id": "4269e65c-ac0f-4971-b3d5-549dd2307aaf",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.deactivated",
+      "content": {
+        "email": "emp.rahul@hrflow.com",
+        "phone": "+91 98201 12345",
+        "status": "RESIGNED",
+        "eventId": "4269e65c-ac0f-4971-b3d5-549dd2307aaf",
+        "version": "1.0.0",
+        "fullName": "Rahul Sharma",
+        "lastName": "Sharma",
+        "metadata": {
+          "reason": "Relocating to another city for higher education.",
+          "source": "RESIGNATION",
+          "resignationId": "923b584a-088b-45be-a386-6db2ea8eafaf"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Rahul",
+        "timestamp": "2026-09-26T10:19:09.215Z",
+        "department": "Engineering",
+        "designation": "Software Systems Engineer",
+        "employeeCode": "APEX-1001",
+        "hrEmployeeId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790417949216,
+        "persistent": true,
+        "messageId": "4269e65c-ac0f-4971-b3d5-549dd2307aaf",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:19:09.761Z"
+    },
+    {
+      "id": "d61e1798-d51b-4470-9cec-5aa7f5235317",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "legacy.holder.1790418033900@belladgroup.com",
+        "phone": null,
+        "status": "ACTIVE",
+        "eventId": "d61e1798-d51b-4470-9cec-5aa7f5235317",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T10:20:33.917Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "f79193ac-3f81-4810-81a6-22f45794fed6",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790418033918,
+        "persistent": true,
+        "messageId": "d61e1798-d51b-4470-9cec-5aa7f5235317",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "f79193ac-3f81-4810-81a6-22f45794fed6",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:20:34.958Z"
+    },
+    {
+      "id": "90c4e7a6-4107-4a7a-9f4f-1060969927c4",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "legacy.holder.1790418033900@belladgroup.com",
+        "phone": "+91 99999 88888",
+        "status": "ACTIVE",
+        "eventId": "90c4e7a6-4107-4a7a-9f4f-1060969927c4",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T10:20:33.939Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "f79193ac-3f81-4810-81a6-22f45794fed6",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790418033939,
+        "persistent": true,
+        "messageId": "90c4e7a6-4107-4a7a-9f4f-1060969927c4",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "f79193ac-3f81-4810-81a6-22f45794fed6",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:20:35.041Z"
+    },
+    {
+      "id": "80c04811-b0cb-47e5-9ec2-f396e146e890",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.deactivated",
+      "content": {
+        "email": "emp.rahul@hrflow.com",
+        "phone": "+91 98201 12345",
+        "status": "RESIGNED",
+        "eventId": "80c04811-b0cb-47e5-9ec2-f396e146e890",
+        "version": "1.0.0",
+        "fullName": "Rahul Sharma",
+        "lastName": "Sharma",
+        "metadata": {
+          "reason": "Relocating to another city for higher education.",
+          "source": "RESIGNATION",
+          "resignationId": "75d7fd09-192b-4fb6-879d-533252481ad6"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Rahul",
+        "timestamp": "2026-09-26T10:20:35.428Z",
+        "department": "Engineering",
+        "designation": "Software Systems Engineer",
+        "employeeCode": "APEX-1001",
+        "hrEmployeeId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790418035429,
+        "persistent": true,
+        "messageId": "80c04811-b0cb-47e5-9ec2-f396e146e890",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:20:36.937Z"
+    },
+    {
+      "id": "6aa284e8-1599-4774-b230-273ffe75ca84",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "legacy.holder.1790418076475@belladgroup.com",
+        "phone": null,
+        "status": "ACTIVE",
+        "eventId": "6aa284e8-1599-4774-b230-273ffe75ca84",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T10:21:16.490Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "25c1727e-4e53-4075-a271-3aa9448893f7",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790418076490,
+        "persistent": true,
+        "messageId": "6aa284e8-1599-4774-b230-273ffe75ca84",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "25c1727e-4e53-4075-a271-3aa9448893f7",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:21:17.177Z"
+    },
+    {
+      "id": "f7c5fe49-e184-4b74-818a-bd03e4977d4c",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "legacy.holder.1790418076475@belladgroup.com",
+        "phone": "+91 99999 88888",
+        "status": "ACTIVE",
+        "eventId": "f7c5fe49-e184-4b74-818a-bd03e4977d4c",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T10:21:16.508Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "25c1727e-4e53-4075-a271-3aa9448893f7",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790418076509,
+        "persistent": true,
+        "messageId": "f7c5fe49-e184-4b74-818a-bd03e4977d4c",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "25c1727e-4e53-4075-a271-3aa9448893f7",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:21:17.252Z"
+    },
+    {
+      "id": "6c34d60a-dcb7-4c86-9673-2f17d47d52b0",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.deactivated",
+      "content": {
+        "email": "emp.rahul@hrflow.com",
+        "phone": "+91 98201 12345",
+        "status": "RESIGNED",
+        "eventId": "6c34d60a-dcb7-4c86-9673-2f17d47d52b0",
+        "version": "1.0.0",
+        "fullName": "Rahul Sharma",
+        "lastName": "Sharma",
+        "metadata": {
+          "reason": "Relocating to another city for higher education.",
+          "source": "RESIGNATION",
+          "resignationId": "bd3ca0cf-2eed-4f4b-9390-42ff9b2eebaa"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Rahul",
+        "timestamp": "2026-09-26T10:21:17.948Z",
+        "department": "Engineering",
+        "designation": "Software Systems Engineer",
+        "employeeCode": "APEX-1001",
+        "hrEmployeeId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790418077949,
+        "persistent": true,
+        "messageId": "6c34d60a-dcb7-4c86-9673-2f17d47d52b0",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:21:19.116Z"
+    },
+    {
+      "id": "21d916fc-2c48-4d1c-ab8d-674c3fe5d9a8",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "legacy.holder.1790418650456@belladgroup.com",
+        "phone": null,
+        "status": "ACTIVE",
+        "eventId": "21d916fc-2c48-4d1c-ab8d-674c3fe5d9a8",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T10:30:50.471Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "5b36970a-64a6-4757-aeca-92b276121f26",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790418650472,
+        "persistent": true,
+        "messageId": "21d916fc-2c48-4d1c-ab8d-674c3fe5d9a8",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "5b36970a-64a6-4757-aeca-92b276121f26",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:30:51.740Z"
+    },
+    {
+      "id": "d5ad6133-4e6b-4671-9463-11bfeb35173d",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "legacy.holder.1790418650456@belladgroup.com",
+        "phone": "+91 99999 88888",
+        "status": "ACTIVE",
+        "eventId": "d5ad6133-4e6b-4671-9463-11bfeb35173d",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T10:30:50.489Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "5b36970a-64a6-4757-aeca-92b276121f26",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790418650490,
+        "persistent": true,
+        "messageId": "d5ad6133-4e6b-4671-9463-11bfeb35173d",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "5b36970a-64a6-4757-aeca-92b276121f26",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:30:51.890Z"
+    },
+    {
+      "id": "d34acd79-0719-4cf5-a2e8-805d7b3eb1a5",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.deactivated",
+      "content": {
+        "email": "emp.rahul@hrflow.com",
+        "phone": "+91 98201 12345",
+        "status": "RESIGNED",
+        "eventId": "d34acd79-0719-4cf5-a2e8-805d7b3eb1a5",
+        "version": "1.0.0",
+        "fullName": "Rahul Sharma",
+        "lastName": "Sharma",
+        "metadata": {
+          "reason": "Relocating to another city for higher education.",
+          "source": "RESIGNATION",
+          "resignationId": "723d1f5c-5f05-4b55-a15a-549f7eef7e38"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Rahul",
+        "timestamp": "2026-09-26T10:30:52.072Z",
+        "department": "Engineering",
+        "designation": "Software Systems Engineer",
+        "employeeCode": "APEX-1001",
+        "hrEmployeeId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790418652073,
+        "persistent": true,
+        "messageId": "d34acd79-0719-4cf5-a2e8-805d7b3eb1a5",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T10:30:53.740Z"
+    },
+    {
+      "id": "8ad60f4c-3fa1-4e5e-b29e-77dbc7eac433",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.created",
+      "content": {
+        "email": "legacy.holder.1790424158008@belladgroup.com",
+        "phone": null,
+        "status": "ACTIVE",
+        "eventId": "8ad60f4c-3fa1-4e5e-b29e-77dbc7eac433",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T12:02:38.026Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "f012e938-d19a-46de-9027-e79eaa909e6a",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790424158028,
+        "persistent": true,
+        "messageId": "8ad60f4c-3fa1-4e5e-b29e-77dbc7eac433",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "f012e938-d19a-46de-9027-e79eaa909e6a",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T12:02:39.090Z"
+    },
+    {
+      "id": "5a757393-0ecf-4d64-9ddb-1da01f736b92",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.bellad.employee.updated",
+      "content": {
+        "email": "legacy.holder.1790424158008@belladgroup.com",
+        "phone": "+91 99999 88888",
+        "status": "ACTIVE",
+        "eventId": "5a757393-0ecf-4d64-9ddb-1da01f736b92",
+        "version": "1.0.0",
+        "fullName": "Legacy Holder",
+        "lastName": "Holder",
+        "metadata": {
+          "source": "PROFILE_UPDATE",
+          "previousStatus": "ACTIVE",
+          "previousBranchId": "8ada09b7-c6c3-4060-bc0b-c7ce5053939c"
+        },
+        "eventType": "employee.updated",
+        "firstName": "Legacy",
+        "timestamp": "2026-09-26T12:02:38.052Z",
+        "department": "Service",
+        "designation": "Temporary Trainee Spec",
+        "employeeCode": "EMP-1016",
+        "hrEmployeeId": "f012e938-d19a-46de-9027-e79eaa909e6a",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b"
+      },
+      "properties": {
+        "timestamp": 1790424158054,
+        "persistent": true,
+        "messageId": "5a757393-0ecf-4d64-9ddb-1da01f736b92",
+        "type": "employee.updated",
+        "headers": {
+          "centralTenantId": "883663e1-917e-4fae-8f1d-9d89e749362b",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "f012e938-d19a-46de-9027-e79eaa909e6a",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T12:02:39.099Z"
+    },
+    {
+      "id": "c9711a89-c6b5-4ea8-b13b-cdc26c8d69f2",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.deactivated",
+      "content": {
+        "email": "emp.rahul@hrflow.com",
+        "phone": "+91 98201 12345",
+        "status": "RESIGNED",
+        "eventId": "c9711a89-c6b5-4ea8-b13b-cdc26c8d69f2",
+        "version": "1.0.0",
+        "fullName": "Rahul Sharma",
+        "lastName": "Sharma",
+        "metadata": {
+          "reason": "Relocating to another city for higher education.",
+          "source": "RESIGNATION",
+          "resignationId": "f606b228-37c1-44c5-9882-6def236254e0"
+        },
+        "eventType": "employee.deactivated",
+        "firstName": "Rahul",
+        "timestamp": "2026-09-26T12:02:39.507Z",
+        "department": "Engineering",
+        "designation": "Software Systems Engineer",
+        "employeeCode": "APEX-1001",
+        "hrEmployeeId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790424159509,
+        "persistent": true,
+        "messageId": "c9711a89-c6b5-4ea8-b13b-cdc26c8d69f2",
+        "type": "employee.deactivated",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "0da5d579-c3ff-4ddb-9835-eedb0f8cae7e",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T12:02:41.074Z"
+    },
+    {
+      "id": "27db5ed9-3712-454f-bdda-c415408eea9a",
+      "exchange": "automobile.events.topic",
+      "routingKey": "employee.apex-auto.employee.created",
+      "content": {
+        "email": "s@belladho.com",
+        "phone": "7896758799",
+        "status": "ACTIVE",
+        "eventId": "27db5ed9-3712-454f-bdda-c415408eea9a",
+        "version": "1.0.0",
+        "fullName": "sandeep  raichur",
+        "lastName": "raichur",
+        "metadata": {
+          "source": "MANUAL_CREATE"
+        },
+        "eventType": "employee.created",
+        "firstName": "sandeep ",
+        "timestamp": "2026-09-26T12:22:17.730Z",
+        "department": "Service",
+        "designation": "Software Systems Engineer",
+        "employeeCode": "EMP-1005",
+        "hrEmployeeId": "9874d1b5-d689-4b93-9526-051e7e39cad9",
+        "centralUserId": null,
+        "centralBranchId": null,
+        "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54"
+      },
+      "properties": {
+        "timestamp": 1790425337731,
+        "persistent": true,
+        "messageId": "27db5ed9-3712-454f-bdda-c415408eea9a",
+        "type": "employee.created",
+        "headers": {
+          "centralTenantId": "f0ea4625-4bb3-4f0a-8a67-77b53c0afb54",
+          "aggregateType": "EMPLOYEE",
+          "aggregateId": "9874d1b5-d689-4b93-9526-051e7e39cad9",
+          "version": "1.0.0"
+        }
+      },
+      "status": "PUBLISHED",
+      "createdAt": "2026-09-26T12:22:18.636Z"
     }
   ],
   "queueMessages": {
     "maintly.employee.sync": [],
     "maintly.employee.sync.dlq": []
   },
-  "savedAt": "2026-09-25T12:41:41.817Z"
+  "savedAt": "2026-09-26T12:22:18.774Z"
 }
