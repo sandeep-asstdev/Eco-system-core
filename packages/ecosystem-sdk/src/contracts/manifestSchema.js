@@ -11,8 +11,16 @@ export const ALLOWED_CATEGORIES = [
   'CRM',
   'FINANCE',
   'SERVICE',
+  'PURCHASE',
+  'PROCUREMENT',
+  'MAINTENANCE',
+  'BILLING',
+  'LOGISTICS',
+  'MARKETING',
+  'UTILITY',
   'DEMO',
-  'PLATFORM'
+  'PLATFORM',
+  'OTHER'
 ];
 
 /**
@@ -51,8 +59,8 @@ export function validateAppManifest(manifest) {
 
   // 5. category
   const category = (manifest.category || 'OPERATIONS').toUpperCase().trim();
-  if (!ALLOWED_CATEGORIES.includes(category)) {
-    errors.push(`'category' must be one of: ${ALLOWED_CATEGORIES.join(', ')}.`);
+  if (!ALLOWED_CATEGORIES.includes(category) && !/^[A-Z0-9_-]{2,30}$/.test(category)) {
+    errors.push(`'category' must be a valid category (e.g. ${ALLOWED_CATEGORIES.join(', ')}).`);
   }
 
   // 6. URLs (frontendUrl, apiUrl, healthUrl)

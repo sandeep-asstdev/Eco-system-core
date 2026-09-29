@@ -148,10 +148,12 @@ export default function Applications() {
         setSelectedTenantsForRegistration(tenantsList.map(t => t.id));
         setRegisterStep(2);
       } else {
-        setRegisterError(res.error?.message || 'Failed to fetch manifest.');
+        const errorMsg = (Array.isArray(res.error?.details) ? res.error.details.join(' ') : null) || res.error?.message || 'Failed to fetch manifest.';
+        setRegisterError(errorMsg);
       }
     } catch (err) {
-      setRegisterError(err.message || 'Manifest fetch failed. Verify network connectivity.');
+      const errorMsg = (Array.isArray(err.details?.details) ? err.details.details.join(' ') : null) || err.message || 'Manifest fetch failed. Verify network connectivity.';
+      setRegisterError(errorMsg);
     } finally {
       setIsFetchingManifest(false);
     }
@@ -179,10 +181,12 @@ export default function Applications() {
         setSelectedTenantsForRegistration(tenantsList.map(t => t.id));
         setRegisterStep(2);
       } else {
-        setRegisterError(res.error?.message || 'Manifest validation failed.');
+        const errorMsg = (Array.isArray(res.error?.details) ? res.error.details.join(' ') : null) || res.error?.message || 'Manifest validation failed.';
+        setRegisterError(errorMsg);
       }
     } catch (err) {
-      setRegisterError(err.message || 'Validation request failed.');
+      const errorMsg = (Array.isArray(err.details?.details) ? err.details.details.join(' ') : null) || err.message || 'Validation request failed.';
+      setRegisterError(errorMsg);
     }
   };
 
