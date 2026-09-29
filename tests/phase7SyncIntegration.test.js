@@ -207,8 +207,9 @@ async function runPhase7Tests() {
   // -------------------------------------------------------------
   console.log('\n[TEST 4] Testing Employee Branch Transfer Synchronization...');
 
-  // Pick a second branch within same tenant if available
-  const secondBranch = branches.find(b => b.id !== testBranch.id && b.tenantId === targetTenantId);
+  // Pick a second branch within same tenant if available (preferring one with mapped centralBranchId)
+  const secondBranch = branches.find(b => b.id !== testBranch.id && b.tenantId === targetTenantId && b.centralBranchId)
+    || branches.find(b => b.id !== testBranch.id && b.tenantId === targetTenantId);
   if (secondBranch) {
     const transferRes = await request(`${HRFLOW_URL}/api/employees/${createdEmp.id}/transfer`, 'POST', {
       toBranchId: secondBranch.id,
@@ -225,7 +226,11 @@ async function runPhase7Tests() {
     });
     const transferredMaintlyEmp = (transferredMaintlyRes.data?.data?.employees || []).find(e => e.email === testEmail);
     assert(transferredMaintlyEmp, 'Employee found post-transfer in MAINTLY');
-    assert(transferredMaintlyEmp.branch?.code === secondBranch.code || transferredMaintlyEmp.centralBranchId === secondBranch.centralBranchId, 'MAINTLY EmployeeReference updated to target facility');
+    assert(
+      transferredMaintlyEmp.branch?.code === secondBranch.code ||
+      transferredMaintlyEmp.centralBranchId === (secondBranch.centralBranchId || secondBranch.id),
+      'MAINTLY EmployeeReference updated to target facility'
+    );
   } else {
     console.log('   (Skipped branch transfer target: only 1 branch in tenant)');
   }
@@ -274,7 +279,7 @@ async function runPhase7Tests() {
   const countBeforeReplay = await request(`${MAINTLY_URL}/api/integrations/employees?search=${uniqueCode}`, 'GET', null, {
     'X-Internal-Service-Key': INTERNAL_KEY,
   });
-  const employeeCountBefore = (countBeforeReplay.data?.data?.employees || []).length;
+  const employeeCountBefore = (countBeforeReplay.data?.data?.employees || []).filter(e => e.email === testEmail).length;
   assert(employeeCountBefore === 1, 'Exactly 1 EmployeeReference exists before replay test');
 
   // Re-publish the exact same event directly to broker
@@ -291,7 +296,7 @@ async function runPhase7Tests() {
   const countAfterReplay = await request(`${MAINTLY_URL}/api/integrations/employees?search=${uniqueCode}`, 'GET', null, {
     'X-Internal-Service-Key': INTERNAL_KEY,
   });
-  const employeeCountAfter = (countAfterReplay.data?.data?.employees || []).length;
+  const employeeCountAfter = (countAfterReplay.data?.data?.employees || []).filter(e => e.email === testEmail).length;
   assert(employeeCountAfter === 1, 'Idempotency verified: replaying identical event did not create duplicate record');
 
   // -------------------------------------------------------------

@@ -1,0 +1,32 @@
+{
+  "manifestVersion": "1.0",
+  "appKey": "demo-app",
+  "name": "Fleet & Accessories (DemoApp)",
+  "version": "1.0.0",
+  "category": "INVENTORY",
+  "description": "Autonomous Ecosystem PERN Extension for Fleet Accessories and Tracking",
+  "frontendUrl": "http://localhost:5005",
+  "apiUrl": "http://localhost:5005",
+  "healthUrl": "http://localhost:5005/api/health",
+  "auth": {
+    "type": "OIDC",
+    "redirectUris": [
+      "http://localhost:5005/auth/callback",
+      "http://localhost:5005"
+    ]
+  },
+  "permissions": [
+    "demo.order.view",
+    "demo.order.create",
+    "demo.order.manage"
+  ],
+  "publishes": [
+    "demo.item.created.v1"
+  ],
+  "subscribes": [
+    "employee.created.v1",
+    "employee.updated.v1",
+    "employee.transferred.v1",
+    "employee.deactivated.v1"
+  ]
+}

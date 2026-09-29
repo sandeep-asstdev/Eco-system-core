@@ -58,6 +58,24 @@ export class EcosystemClient {
   }
 
   /**
+   * Retrieves application registration details.
+   */
+  async getApplication(appKey) {
+    const res = await this._request(`/applications/${appKey}`);
+    return res.data;
+  }
+
+  /**
+   * Registers or updates an application manifest in the ecosystem registry.
+   */
+  async registerApplication(manifest, tenantIds = []) {
+    return await this._request('/applications', {
+      method: 'POST',
+      body: JSON.stringify({ manifest, tenantIds })
+    });
+  }
+
+  /**
    * Records an immutable central audit log.
    */
   async recordAuditLog({ tenantId, userId, action, entityType, entityId, oldValue, newValue }) {

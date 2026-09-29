@@ -353,6 +353,74 @@ const requestHandler = async (req, res) => {
     return res.end(JSON.stringify(broker.getMetrics().exchanges, null, 2));
   }
 
+  // Declare / Assert Queue dynamically
+  if (url.pathname === '/api/queues/declare' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const { queueName, options } = JSON.parse(body || '{}');
+        if (!queueName) {
+          res.writeHead(400);
+          return res.end(JSON.stringify({ error: 'queueName is required' }));
+        }
+        broker.assertQueue(queueName, options || {});
+        res.writeHead(200);
+        res.end(JSON.stringify({ success: true, queue: queueName }));
+      } catch (e) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
+  // Declare / Assert Binding dynamically
+  if (url.pathname === '/api/bindings/declare' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const { queueName, exchange, pattern } = JSON.parse(body || '{}');
+        if (!queueName || !exchange || !pattern) {
+          res.writeHead(400);
+          return res.end(JSON.stringify({ error: 'queueName, exchange, and pattern are required' }));
+        }
+        broker.bindQueue(queueName, exchange, pattern);
+        res.writeHead(200);
+        res.end(JSON.stringify({ success: true, queue: queueName, exchange, pattern }));
+      } catch (e) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
+  // Pull / pop single message from queue (used by SDK HTTP fallback consumer)
+  if (url.pathname === '/api/consume' && req.method === 'GET') {
+    const queueName = url.searchParams.get('queue');
+    if (!queueName) {
+      res.writeHead(400);
+      return res.end(JSON.stringify({ error: 'queue parameter is required' }));
+    }
+    const queue = broker.queues.get(queueName);
+    if (!queue || queue.messages.length === 0) {
+      res.writeHead(200);
+      return res.end(JSON.stringify({ queue: queueName, message: null }));
+    }
+    const message = queue.messages.shift();
+    broker.saveState();
+    res.writeHead(200);
+    const content = typeof message.content === 'string' ? JSON.parse(message.content) : message.content;
+    return res.end(JSON.stringify({
+      queue: queueName,
+      messageId: message.id,
+      message: content,
+      properties: message.properties
+    }));
+  }
+
   // Pull / batch retrieve pending messages from queue
   if (url.pathname.startsWith('/api/queues/') && url.pathname.endsWith('/get') && req.method === 'POST') {
     const queueName = decodeURIComponent(url.pathname.replace('/api/queues/', '').replace('/get', ''));

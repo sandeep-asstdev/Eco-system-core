@@ -9,11 +9,27 @@ import {
   createEcosystemClient
 } from '@automobile-ecosystem/sdk';
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const manifestPath = path.resolve(__dirname, '..', 'manifest.json');
+
 const PORT = process.env.PORT || 5005;
 const app = express();
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+
+// Public manifest discovery endpoint
+app.get('/manifest.json', (req, res) => {
+  if (fs.existsSync(manifestPath)) {
+    return res.sendFile(manifestPath);
+  }
+  res.status(404).json({ error: 'Manifest not found' });
+});
 
 // In-memory demo store
 const demoItems = [
@@ -124,8 +140,8 @@ app.post('/api/items', authenticate, requirePermission('demo.order.create'), asy
 });
 
 // View Consumed Events
-app.get('/api/consumed-events', authenticate, (req, res) => {
-  res.json({ success: true, data: consumedEvents });
+app.get('/api/consumed-events', (req, res) => {
+  res.json({ success: true, count: consumedEvents.length, data: consumedEvents });
 });
 
 // Embedded Dashboard UI
@@ -196,15 +212,22 @@ app.use(createErrorHandler({ serviceName: 'demo-app' }));
 async function start() {
   await eventBus.connect();
 
-  // Subscribe to employee.created to demonstrate event consumption
-  await eventBus.subscribe('demo.employee.sync', 'employee.created', (payload) => {
-    consumedEvents.push({
+  // Subscribe to employee.# to demonstrate dynamic multi-event consumption
+  await eventBus.subscribe('demo.employee.sync', 'employee.#', (payload) => {
+    const payloadData = payload.data || payload;
+    const name = payloadData.displayName || `${payloadData.firstName || ''} ${payloadData.lastName || ''}`.trim() || 'Employee';
+    const entry = {
       eventType: payload.eventType,
       eventId: payload.eventId,
-      employeeName: `${payload.data?.firstName} ${payload.data?.lastName}`,
+      employeeId: payloadData.employeeId || payloadData.hrEmployeeId || payload.aggregateId,
+      employeeName: name,
+      department: payloadData.department,
+      designation: payloadData.designation,
+      tenantId: payload.tenantId || payload.centralTenantId || payloadData.tenantId,
       receivedAt: new Date().toISOString()
-    });
-    console.log(`🚗 [DemoApp] Consumed employee event: ${payload.data?.firstName} ${payload.data?.lastName}`);
+    };
+    consumedEvents.push(entry);
+    console.log(`🚗 [DemoApp] Consumed employee event (${entry.eventType}): ${entry.employeeName}`);
   });
 
   app.listen(PORT, () => {

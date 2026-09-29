@@ -49,21 +49,32 @@ export class EcosystemEventBus extends EventEmitter {
     }
   }
 
-  /**
-   * Publishes a versioned domain event to the ecosystem topic exchange.
-   */
   async publishEvent(eventType, data, options = {}) {
+    const eventId = options.eventId || `evt-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const tenantId = options.tenantId || options.centralTenantId || data?.tenantId || data?.centralTenantId || null;
+    const branchId = options.branchId || options.centralBranchId || data?.branchId || data?.centralBranchId || null;
+    const occurredAt = options.occurredAt || new Date().toISOString();
+    const correlationId = options.correlationId || `corr-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+
     const envelope = {
-      eventId: options.eventId || `evt-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      version: options.version || '1.0.0',
+      eventId,
       eventType,
-      producer: this.serviceName,
-      timestamp: new Date().toISOString(),
-      centralTenantId: options.centralTenantId || data?.centralTenantId || null,
-      centralBranchId: options.centralBranchId || data?.centralBranchId || null,
+      eventVersion: options.eventVersion || 1,
+      sourceApp: this.serviceName,
+      tenantId,
+      firmId: options.firmId || data?.firmId || null,
+      branchId,
+      occurredAt,
+      correlationId,
       data,
+      // Compatibility aliases
+      version: options.version || '1.0.0',
+      producer: this.serviceName,
+      timestamp: occurredAt,
+      centralTenantId: tenantId,
+      centralBranchId: branchId,
       metadata: {
-        correlationId: options.correlationId || null,
+        correlationId,
         causationId: options.causationId || null,
         schemaVersion: options.schemaVersion || '1.0',
         ...options.metadata
@@ -181,6 +192,20 @@ export class EcosystemEventBus extends EventEmitter {
     } else {
       // Fallback polling for HTTP broker mode
       this.logger.log(`📥 [${this.serviceName}] Fallback polling active for queue '${queueName}'.`);
+      try {
+        await fetch(`${this.httpBrokerUrl}/api/queues/declare`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ queueName, options: { durable: true } })
+        });
+        await fetch(`${this.httpBrokerUrl}/api/bindings/declare`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ queueName, exchange: this.exchange, pattern: routingKey })
+        });
+      } catch (e) {
+        this.logger.warn(`[${this.serviceName}] Warning auto-declaring HTTP fallback queue:`, e.message);
+      }
       this._startHttpPolling(queueName, handler, options);
     }
   }
@@ -205,7 +230,7 @@ export class EcosystemEventBus extends EventEmitter {
           }
         }
       } catch (_) {}
-      setTimeout(poll, 1500);
+      setTimeout(poll, 400);
     };
     poll();
   }

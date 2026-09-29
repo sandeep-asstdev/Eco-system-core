@@ -54,21 +54,81 @@ router.get('/overview', requireRole('PLATFORM_ADMIN', 'TENANT_ADMIN', 'BM'), asy
   try {
     const internalKey = process.env.INTERNAL_SERVICE_KEY || 'ecosystem-internal-service-sync-key';
 
-    const [brokerRes, hrflowRes, maintlyRes] = await Promise.all([
+    const [brokerRes, hrflowRes, maintlyRes, dlqRes, registeredApps, recentSyncLogs] = await Promise.all([
       httpJsonRequest('http://localhost:15672/api/overview'),
       httpJsonRequest('http://localhost:5000/api/v1/integrations/outbox/status', 'GET', null, {
         'X-Internal-Service-Key': internalKey,
       }),
       httpJsonRequest('http://localhost:15672/api/queues'),
+      httpJsonRequest('http://localhost:15672/api/queues/maintly.employee.sync.dlq/messages'),
+      prisma.application.findMany({
+        select: {
+          id: true,
+          appKey: true,
+          name: true,
+          category: true,
+          version: true,
+          status: true,
+          baseUrl: true,
+          healthEndpoint: true,
+          supportedEvents: true,
+          settings: true,
+        },
+      }),
+      prisma.auditLog.findMany({
+        where: {
+          action: { in: ['EMPLOYEE_SYNC_TRIGGERED', 'EMPLOYEE_INITIAL_SYNC', 'OUTBOX_RETRY_TRIGGERED', 'DLQ_REPLAY_TRIGGERED'] },
+        },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+      }),
     ]);
 
-    // Query MAINTLY stats directly or from db
-    const maintlyEmployeeCount = await prisma.$queryRawUnsafe(
-      `SELECT count(*) FROM "maintly_db"."employee_references"`
-    ).catch(async () => {
-      // fallback to querying maintly db via direct count or http
-      return [{ count: '10' }];
+    // Check live health of registered applications in parallel with short timeout
+    const appHealthMap = {};
+    await Promise.all(
+      registeredApps.map(async (app) => {
+        const healthUrl = app.baseUrl ? `${app.baseUrl.replace(/\/+$/, '')}${app.healthEndpoint || '/api/health'}` : null;
+        if (!healthUrl) {
+          appHealthMap[app.appKey] = { status: app.status === 'ACTIVE' ? 'HEALTHY' : 'SUSPENDED' };
+          return;
+        }
+        try {
+          const pingRes = await httpJsonRequest(healthUrl);
+          appHealthMap[app.appKey] = {
+            status: pingRes.status >= 200 && pingRes.status < 400 ? 'HEALTHY' : 'UNHEALTHY',
+            statusCode: pingRes.status,
+          };
+        } catch {
+          appHealthMap[app.appKey] = { status: 'OFFLINE' };
+        }
+      })
+    );
+
+    // Sanitize DLQ messages for security
+    const rawDlqMessages = dlqRes.data?.messages || [];
+    const sanitizedDlq = rawDlqMessages.map((m) => {
+      const parsedContent = typeof m.content === 'string' ? JSON.parse(m.content) : (m.content || {});
+      return {
+        id: m.id,
+        routingKey: m.routingKey,
+        exchange: m.exchange,
+        createdAt: m.createdAt,
+        eventId: parsedContent.eventId,
+        eventType: parsedContent.eventType,
+        tenantId: parsedContent.tenantId || parsedContent.centralTenantId,
+        sourceApp: parsedContent.sourceApp,
+        error: m.properties?.deathReason || 'Dead-lettered from processing queue',
+      };
     });
+
+    const enrichedApps = registeredApps.map((app) => ({
+      ...app,
+      healthUrl: app.baseUrl ? `${app.baseUrl.replace(/\/+$/, '')}${app.healthEndpoint || '/api/health'}` : null,
+      eventsPublished: app.supportedEvents || [],
+      eventsSubscribed: app.settings?.subscribes || [],
+      health: appHealthMap[app.appKey]?.status || 'UNKNOWN',
+    }));
 
     return res.json({
       success: true,
@@ -82,6 +142,16 @@ router.get('/overview', requireRole('PLATFORM_ADMIN', 'TENANT_ADMIN', 'BM'), asy
           data: hrflowRes.data?.data || null,
         },
         queues: brokerRes.data?.metrics?.queues || {},
+        dlqMessages: sanitizedDlq,
+        dlqCount: sanitizedDlq.length,
+        registeredApplications: enrichedApps,
+        recentSyncLogs: recentSyncLogs.map(l => ({
+          id: l.id,
+          action: l.action,
+          entity: l.entity,
+          details: l.details,
+          createdAt: l.createdAt,
+        })),
         timestamp: new Date().toISOString(),
       },
     });
@@ -219,4 +289,41 @@ router.post('/replay-dlq', requireRole('PLATFORM_ADMIN', 'TENANT_ADMIN'), async 
   }
 });
 
+/**
+ * POST /api/v1/sync/outbox/retry/:id
+ * Retries a specific failed outbox event by ID.
+ */
+router.post('/outbox/retry/:id', requireRole('PLATFORM_ADMIN', 'TENANT_ADMIN'), async (req, res) => {
+  try {
+    const internalKey = process.env.INTERNAL_SERVICE_KEY || 'ecosystem-internal-service-sync-key';
+    const { id } = req.params;
+    const result = await httpJsonRequest(
+      `http://localhost:5000/api/v1/integrations/outbox/retry/${id}`,
+      'POST',
+      JSON.stringify(req.body || {}),
+      { 'X-Internal-Service-Key': internalKey }
+    );
+
+    if (req.user?.tenantId) {
+      await prisma.auditLog.create({
+        data: {
+          tenantId: req.user.tenantId,
+          userId: req.user.id,
+          action: 'OUTBOX_SINGLE_RETRY_TRIGGERED',
+          entity: 'OutboxEvent',
+          entityId: id,
+          details: result.data || {},
+          ipAddress: req.ip,
+        },
+      });
+    }
+
+    return res.status(result.status || 200).json(result.data || { success: false });
+  } catch (err) {
+    console.error(`Error retrying outbox event ${req.params.id}:`, err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 export default router;
+
