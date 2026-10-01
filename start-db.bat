@@ -11,5 +11,10 @@ if %ERRORLEVEL% EQU 0 (
     exit /b 0
 )
 
+if exist "C:\Program Files\PostgreSQL\18\data\postmaster.pid" (
+    echo [RECOVERY] Removing stale postmaster.pid lockfile...
+    del /f /q "C:\Program Files\PostgreSQL\18\data\postmaster.pid" >nul 2>&1
+)
+
 echo Starting PostgreSQL 18 server...
 "C:\Program Files\PostgreSQL\18\bin\postgres.exe" -D "C:\Program Files\PostgreSQL\18\data" -p 5433
