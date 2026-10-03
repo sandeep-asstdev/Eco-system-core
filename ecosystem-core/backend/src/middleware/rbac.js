@@ -69,7 +69,7 @@ export function checkPermission(requiredPermission, getScope = (req) => ({})) {
       return next();
     }
 
-    const { targetFirmId, targetBrandId, targetBranchId, targetDeptId } = getScope(req);
+    const { targetFirmId, targetBrandId, targetLocationId, targetBranchId, targetBusinessUnitId, targetDeptId } = getScope(req);
     const assignments = req.userRoleAssignments || [];
 
     const hasAccess = assignments.some(assignment => {
@@ -84,14 +84,20 @@ export function checkPermission(requiredPermission, getScope = (req) => ({})) {
 
       // Scope verification
       switch (assignment.scopeType) {
+        case 'GLOBAL':
         case 'TENANT':
           return true;
         case 'FIRM':
           return !targetFirmId || assignment.firmId === targetFirmId;
         case 'BRAND':
           return !targetBrandId || assignment.brandId === targetBrandId;
+        case 'LOCATION':
+          return !targetLocationId || assignment.locationId === targetLocationId;
         case 'BRANCH':
           return !targetBranchId || assignment.branchId === targetBranchId;
+        case 'BUSINESS_UNIT':
+          return (!targetBranchId || assignment.branchId === targetBranchId) &&
+                 (!targetBusinessUnitId || assignment.businessUnitId === targetBusinessUnitId);
         case 'DEPARTMENT':
           return (!targetBranchId || assignment.branchId === targetBranchId) &&
                  (!targetDeptId || assignment.departmentId === targetDeptId);

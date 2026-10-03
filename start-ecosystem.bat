@@ -11,13 +11,21 @@ set ROOT=%~dp0
 echo [1/6] Checking PostgreSQL 18 (Port 5433)...
 netstat -ano | findstr ":5433" | findstr "LISTENING" >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    if exist "C:\Program Files\PostgreSQL\18\data\postmaster.pid" (
-        echo [RECOVERY] Removing stale postmaster.pid lockfile...
-        del /f /q "C:\Program Files\PostgreSQL\18\data\postmaster.pid" >nul 2>&1
+    echo [STARTING] Starting PostgreSQL 18 Windows Service...
+    sc start postgresql-x64-18 >nul 2>&1
+    timeout /t 2 >nul
+    netstat -ano | findstr ":5433" | findstr "LISTENING" >nul 2>&1
+    if %ERRORLEVEL% NEQ 0 (
+        if exist "C:\Program Files\PostgreSQL\18\data\postmaster.pid" (
+            echo [RECOVERY] Removing stale postmaster.pid lockfile...
+            del /f /q "C:\Program Files\PostgreSQL\18\data\postmaster.pid" >nul 2>&1
+        )
+        echo [STARTING] PostgreSQL 18 on port 5433 (standalone fallback)...
+        start "PostgreSQL-18" cmd /k "title PostgreSQL 18 ^& ""C:\Program Files\PostgreSQL\18\bin\postgres.exe"" -D ""C:\Program Files\PostgreSQL\18\data"" -p 5433"
+        timeout /t 3 >nul
+    ) else (
+        echo [OK] PostgreSQL 18 Windows Service started on port 5433.
     )
-    echo [STARTING] PostgreSQL 18 on port 5433...
-    start "PostgreSQL-18" cmd /k "title PostgreSQL 18 ^& ""C:\Program Files\PostgreSQL\18\bin\postgres.exe"" -D ""C:\Program Files\PostgreSQL\18\data"" -p 5433"
-    timeout /t 3 >nul
 ) else (
     echo [OK] PostgreSQL 18 is already running on port 5433.
 )

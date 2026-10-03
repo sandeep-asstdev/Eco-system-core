@@ -416,8 +416,15 @@ export async function getBranches(req, res, next) {
           firmBrand: {
             include: { brand: { select: { id: true, name: true, code: true, logoUrl: true } } }
           },
+          location: { select: { id: true, name: true, code: true, city: true, state: true, addressLine1: true, type: true } },
+          branchBrands: {
+            include: { brand: { select: { id: true, name: true, code: true, logoUrl: true } } }
+          },
+          branchBusinessUnits: {
+            include: { businessUnit: { select: { id: true, code: true, name: true, type: true, icon: true } } }
+          },
           departments: { select: { id: true, code: true, name: true } },
-          _count: { select: { memberships: true } }
+          _count: { select: { memberships: true, departments: true, branchBrands: true, branchBusinessUnits: true } }
         },
         orderBy: { name: 'asc' }
       })
@@ -441,11 +448,15 @@ export async function getBranchById(req, res, next) {
       include: {
         firm: true,
         firmBrand: { include: { brand: true } },
+        location: true,
+        branchBrands: { include: { brand: true } },
+        branchBusinessUnits: { include: { businessUnit: true } },
         departments: true,
         memberships: {
           include: {
             user: { select: { id: true, email: true, firstName: true, lastName: true, phone: true } },
-            department: true
+            department: true,
+            businessUnit: true
           }
         }
       }
@@ -710,3 +721,545 @@ export async function createDepartment(req, res, next) {
     next(error);
   }
 }
+
+// ==========================================
+// LOCATIONS (PHYSICAL REAL ESTATE / CAMPUSES)
+// ==========================================
+
+export async function getLocations(req, res, next) {
+  try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const skip = (page - 1) * limit;
+
+    const { city, type, active, search } = req.query;
+    const where = { ...resolveTenantScope(req) };
+
+    if (active !== undefined) {
+      where.isActive = active === 'true';
+    }
+    if (type) where.type = type;
+    if (city) where.city = { contains: city, mode: 'insensitive' };
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { code: { contains: search, mode: 'insensitive' } },
+        { city: { contains: search, mode: 'insensitive' } },
+        { addressLine1: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const [total, locations] = await Promise.all([
+      prisma.location.count({ where }),
+      prisma.location.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          branches: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              outletType: true,
+              active: true,
+              firm: { select: { id: true, name: true, code: true } },
+              branchBrands: { include: { brand: { select: { id: true, name: true, code: true, logoUrl: true } } } }
+            }
+          },
+          _count: { select: { branches: true } }
+        },
+        orderBy: { name: 'asc' }
+      })
+    ]);
+
+    res.json({
+      success: true,
+      data: locations,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) || 1 }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getLocationById(req, res, next) {
+  try {
+    const { id } = req.params;
+    const location = await prisma.location.findFirst({
+      where: { id, ...resolveTenantScope(req) },
+      include: {
+        branches: {
+          include: {
+            firm: { select: { id: true, name: true, code: true } },
+            branchBrands: { include: { brand: true } },
+            branchBusinessUnits: { include: { businessUnit: true } },
+            departments: true
+          }
+        }
+      }
+    });
+
+    if (!location) {
+      return res.status(404).json({ success: false, error: { message: 'Physical location facility not found.' } });
+    }
+
+    res.json({ success: true, data: location });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function createLocation(req, res, next) {
+  try {
+    const {
+      code, name, type, addressLine1, addressLine2, city, state, pincode, country,
+      latitude, longitude, plotNumber, surveyNumber, totalAreaSqFt, metadata
+    } = req.body;
+
+    if (!code || !name || !city || !state) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'code, name, city, and state are required to create a physical location.' }
+      });
+    }
+
+    const targetTenantId = req.tenantId || req.headers['x-tenant-id'] || req.body.tenantId;
+    if (!targetTenantId) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'tenantId is required.' }
+      });
+    }
+
+    const normalizedCode = code.toUpperCase().trim();
+    const existing = await prisma.location.findUnique({
+      where: { tenantId_code: { tenantId: targetTenantId, code: normalizedCode } }
+    });
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        error: { code: 'CONFLICT', message: `Physical location with code '${normalizedCode}' already exists.` }
+      });
+    }
+
+    const location = await prisma.location.create({
+      data: {
+        tenantId: targetTenantId,
+        code: normalizedCode,
+        name: name.trim(),
+        type: type || 'DEALERSHIP_CAMPUS',
+        addressLine1,
+        addressLine2,
+        city: city.trim(),
+        state: state.trim(),
+        pincode,
+        country: country || 'India',
+        latitude: latitude ? parseFloat(latitude) : null,
+        longitude: longitude ? parseFloat(longitude) : null,
+        plotNumber,
+        surveyNumber,
+        totalAreaSqFt: totalAreaSqFt ? parseInt(totalAreaSqFt, 10) : null,
+        metadata: metadata || {}
+      }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        tenantId: targetTenantId,
+        userId: req.userId || null,
+        action: 'LOCATION_CREATED',
+        entityType: 'Location',
+        entityId: location.id,
+        newValue: { code: location.code, name: location.name, city: location.city }
+      }
+    });
+
+    res.status(201).json({ success: true, data: location });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateLocation(req, res, next) {
+  try {
+    const { id } = req.params;
+    const tenantFilter = resolveTenantScope(req);
+    const existing = await prisma.location.findFirst({ where: { id, ...tenantFilter } });
+    if (!existing) {
+      return res.status(404).json({ success: false, error: { message: 'Location not found.' } });
+    }
+
+    const {
+      name, type, addressLine1, addressLine2, city, state, pincode,
+      latitude, longitude, plotNumber, surveyNumber, totalAreaSqFt, isActive, metadata
+    } = req.body;
+
+    const updated = await prisma.location.update({
+      where: { id },
+      data: {
+        name: name !== undefined ? name.trim() : undefined,
+        type: type !== undefined ? type : undefined,
+        addressLine1: addressLine1 !== undefined ? addressLine1 : undefined,
+        addressLine2: addressLine2 !== undefined ? addressLine2 : undefined,
+        city: city !== undefined ? city.trim() : undefined,
+        state: state !== undefined ? state.trim() : undefined,
+        pincode: pincode !== undefined ? pincode : undefined,
+        latitude: latitude !== undefined ? parseFloat(latitude) : undefined,
+        longitude: longitude !== undefined ? parseFloat(longitude) : undefined,
+        plotNumber: plotNumber !== undefined ? plotNumber : undefined,
+        surveyNumber: surveyNumber !== undefined ? surveyNumber : undefined,
+        totalAreaSqFt: totalAreaSqFt !== undefined ? parseInt(totalAreaSqFt, 10) : undefined,
+        isActive: isActive !== undefined ? Boolean(isActive) : undefined,
+        metadata: metadata !== undefined ? metadata : undefined
+      }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        tenantId: existing.tenantId,
+        userId: req.userId || null,
+        action: 'LOCATION_UPDATED',
+        entityType: 'Location',
+        entityId: updated.id,
+        newValue: { name: updated.name, city: updated.city, isActive: updated.isActive }
+      }
+    });
+
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function deleteLocation(req, res, next) {
+  try {
+    const { id } = req.params;
+    const tenantFilter = resolveTenantScope(req);
+    const location = await prisma.location.findFirst({
+      where: { id, ...tenantFilter },
+      include: { _count: { select: { branches: true } } }
+    });
+
+    if (!location) {
+      return res.status(404).json({ success: false, error: { message: 'Location not found.' } });
+    }
+
+    if (location._count.branches > 0 && req.query.force !== 'true') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'BRANCHES_ATTACHED',
+          message: `Cannot delete location facility hosting ${location._count.branches} active dealership branch(es). Reassign branches first or set force=true to deactivate.`
+        }
+      });
+    }
+
+    // Soft delete
+    const deactivated = await prisma.location.update({
+      where: { id },
+      data: { isActive: false }
+    });
+
+    res.json({ success: true, message: 'Physical location facility deactivated successfully.', data: deactivated });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ==========================================
+// BUSINESS UNITS (OPERATIONAL CAPABILITIES)
+// ==========================================
+
+export async function getBusinessUnits(req, res, next) {
+  try {
+    const where = { ...resolveTenantScope(req) };
+    if (req.query.active !== undefined) {
+      where.isActive = req.query.active === 'true';
+    }
+
+    const businessUnits = await prisma.businessUnit.findMany({
+      where,
+      include: {
+        _count: { select: { branchBusinessUnits: true } }
+      },
+      orderBy: { code: 'asc' }
+    });
+
+    res.json({ success: true, data: businessUnits });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function createBusinessUnit(req, res, next) {
+  try {
+    const { code, name, type, description, icon } = req.body;
+    if (!code || !name) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'code and name are required.' }
+      });
+    }
+
+    const targetTenantId = req.tenantId || req.headers['x-tenant-id'] || req.body.tenantId;
+    const normalizedCode = code.toUpperCase().trim();
+
+    const existing = await prisma.businessUnit.findUnique({
+      where: { tenantId_code: { tenantId: targetTenantId, code: normalizedCode } }
+    });
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        error: { code: 'CONFLICT', message: `Business unit with code '${normalizedCode}' already exists.` }
+      });
+    }
+
+    const bu = await prisma.businessUnit.create({
+      data: {
+        tenantId: targetTenantId,
+        code: normalizedCode,
+        name: name.trim(),
+        type: type || 'VALUE_ADDED_SERVICE',
+        description,
+        icon: icon || 'Wrench'
+      }
+    });
+
+    res.status(201).json({ success: true, data: bu });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ==========================================
+// BRANCH MULTI-BRAND & CAPABILITIES LINKING
+// ==========================================
+
+export async function getBranchBrands(req, res, next) {
+  try {
+    const { branchId } = req.params;
+    const branchBrands = await prisma.branchBrand.findMany({
+      where: { branchId, ...resolveTenantScope(req) },
+      include: { brand: true }
+    });
+    res.json({ success: true, data: branchBrands });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function addBranchBrand(req, res, next) {
+  try {
+    const { branchId } = req.params;
+    const { brandId, dealerCode, isPrimary } = req.body;
+
+    if (!brandId) {
+      return res.status(400).json({ success: false, error: { message: 'brandId is required.' } });
+    }
+
+    const tenantFilter = resolveTenantScope(req);
+    const branch = await prisma.branch.findFirst({ where: { id: branchId, ...tenantFilter } });
+    if (!branch) {
+      return res.status(404).json({ success: false, error: { message: 'Branch not found.' } });
+    }
+
+    const branchBrand = await prisma.branchBrand.upsert({
+      where: { branchId_brandId: { branchId, brandId } },
+      update: {
+        dealerCode: dealerCode || undefined,
+        isPrimary: isPrimary !== undefined ? Boolean(isPrimary) : undefined,
+        isActive: true
+      },
+      create: {
+        tenantId: branch.tenantId,
+        branchId,
+        brandId,
+        dealerCode: dealerCode || branch.code,
+        isPrimary: isPrimary !== undefined ? Boolean(isPrimary) : false,
+        isActive: true
+      },
+      include: { brand: true }
+    });
+
+    res.status(201).json({ success: true, data: branchBrand });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function removeBranchBrand(req, res, next) {
+  try {
+    const { branchId, brandId } = req.params;
+    await prisma.branchBrand.deleteMany({
+      where: { branchId, brandId, ...resolveTenantScope(req) }
+    });
+    res.json({ success: true, message: 'Brand unlinked from branch successfully.' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getBranchBusinessUnits(req, res, next) {
+  try {
+    const { branchId } = req.params;
+    const branchBUs = await prisma.branchBusinessUnit.findMany({
+      where: { branchId, ...resolveTenantScope(req) },
+      include: { businessUnit: true }
+    });
+    res.json({ success: true, data: branchBUs });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateBranchBusinessUnits(req, res, next) {
+  try {
+    const { branchId } = req.params;
+    const { capabilities } = req.body; // array of { businessUnitId, operationalStatus, capacityUnits, workingHours }
+
+    if (!Array.isArray(capabilities)) {
+      return res.status(400).json({ success: false, error: { message: 'capabilities array is required.' } });
+    }
+
+    const tenantFilter = resolveTenantScope(req);
+    const branch = await prisma.branch.findFirst({ where: { id: branchId, ...tenantFilter } });
+    if (!branch) {
+      return res.status(404).json({ success: false, error: { message: 'Branch not found.' } });
+    }
+
+    const results = [];
+    for (const cap of capabilities) {
+      const bbu = await prisma.branchBusinessUnit.upsert({
+        where: { branchId_businessUnitId: { branchId, businessUnitId: cap.businessUnitId } },
+        update: {
+          operationalStatus: cap.operationalStatus || 'ACTIVE',
+          capacityUnits: cap.capacityUnits !== undefined ? parseInt(cap.capacityUnits, 10) : undefined,
+          workingHours: cap.workingHours || undefined
+        },
+        create: {
+          tenantId: branch.tenantId,
+          branchId,
+          businessUnitId: cap.businessUnitId,
+          operationalStatus: cap.operationalStatus || 'ACTIVE',
+          capacityUnits: cap.capacityUnits !== undefined ? parseInt(cap.capacityUnits, 10) : 10,
+          workingHours: cap.workingHours || { open: '09:00', close: '19:00', days: 'Mon-Sat' }
+        },
+        include: { businessUnit: true }
+      });
+      results.push(bbu);
+    }
+
+    res.json({ success: true, data: results });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ==========================================
+// HIERARCHICAL ORGANIZATION TREE (REAL DATA)
+// ==========================================
+
+export async function getOrganizationTree(req, res, next) {
+  try {
+    const tenantFilter = resolveTenantScope(req);
+    const tenant = await prisma.tenant.findFirst({
+      where: tenantFilter.tenantId ? { id: tenantFilter.tenantId } : {},
+      include: {
+        firms: {
+          where: { isActive: true },
+          include: {
+            firmBrands: { include: { brand: true } },
+            branches: {
+              where: { active: true },
+              include: {
+                location: true,
+                branchBrands: { include: { brand: true } },
+                branchBusinessUnits: { include: { businessUnit: true } },
+                departments: { where: { active: true } },
+                _count: { select: { memberships: true } }
+              }
+            }
+          }
+        },
+        locations: {
+          where: { isActive: true },
+          include: {
+            branches: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+                outletType: true,
+                firm: { select: { id: true, name: true, code: true } }
+              }
+            }
+          }
+        },
+        brands: {
+          where: { isActive: true },
+          include: {
+            branchBrands: {
+              include: {
+                branch: { select: { id: true, name: true, city: true } }
+              }
+            }
+          }
+        },
+        businessUnits: {
+          where: { isActive: true },
+          include: {
+            _count: { select: { branchBusinessUnits: true } }
+          }
+        }
+      }
+    });
+
+    if (!tenant) {
+      return res.status(404).json({ success: false, error: { message: 'Tenant organization not found.' } });
+    }
+
+    // Build synthesized metric aggregations
+    let totalBranches = 0;
+    let totalMemberships = 0;
+    let totalCapabilities = 0;
+
+    for (const firm of tenant.firms) {
+      totalBranches += firm.branches.length;
+      for (const branch of firm.branches) {
+        totalMemberships += branch._count.memberships;
+        totalCapabilities += branch.branchBusinessUnits.length;
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        tenant: {
+          id: tenant.id,
+          code: tenant.code,
+          name: tenant.name,
+          legalName: tenant.legalName,
+          subscriptionTier: tenant.subscriptionTier,
+          status: tenant.status
+        },
+        metrics: {
+          totalFirms: tenant.firms.length,
+          totalLocations: tenant.locations.length,
+          totalBranches,
+          totalBrands: tenant.brands.length,
+          totalBusinessUnits: tenant.businessUnits.length,
+          totalActiveCapabilities: totalCapabilities,
+          totalStaff: totalMemberships
+        },
+        firms: tenant.firms,
+        locations: tenant.locations,
+        brands: tenant.brands,
+        businessUnits: tenant.businessUnits
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+

@@ -45,7 +45,9 @@ enum ScopeType {
   TENANT
   FIRM
   BRAND
+  LOCATION
   BRANCH
+  BUSINESS_UNIT
   DEPARTMENT
 }
 
@@ -88,7 +90,11 @@ model Tenant {
   firms               Firm[]
   brands              Brand[]
   firmBrands          FirmBrand[]
+  locations           Location[]
   branches            Branch[]
+  businessUnits       BusinessUnit[]
+  branchBrands        BranchBrand[]
+  branchBusinessUnits BranchBusinessUnit[]
   departments         Department[]
   users               User[]
   memberships         OrganizationMembership[]
@@ -152,6 +158,7 @@ model Brand {
 
   tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   firmBrands          FirmBrand[]
+  branchBrands        BranchBrand[]
   userRoleAssignments UserRoleAssignment[]
 
   @@unique([tenantId, code])
@@ -186,6 +193,42 @@ model FirmBrand {
 }
 
 // ==========================================
+// 4B. LOCATION (PHYSICAL REAL ESTATE / CAMPUS)
+// ==========================================
+
+model Location {
+  id            String   @id @default(uuid())
+  tenantId      String
+  code          String   // e.g. "LOC-HBL-GOKUL", "LOC-DHW-PBROAD"
+  name          String   // e.g. "Gokul Road Automotive Campus", "P.B. Road Showroom Complex"
+  type          String   @default("DEALERSHIP_CAMPUS") // DEALERSHIP_CAMPUS, STANDALONE_STORE, WORKSHOP_FACILITY, STOCKYARD
+  addressLine1  String?
+  addressLine2  String?
+  city          String
+  state         String
+  pincode       String?
+  country       String   @default("India")
+  latitude      Float?
+  longitude     Float?
+  plotNumber    String?
+  surveyNumber  String?
+  totalAreaSqFt Int?
+  isActive      Boolean  @default(true)
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branches            Branch[]
+  userRoleAssignments UserRoleAssignment[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([city])
+  @@map("locations")
+}
+
+// ==========================================
 // 5. BRANCH (PHYSICAL SHOWROOM / WORKSHOP)
 // ==========================================
 
@@ -194,6 +237,7 @@ model Branch {
   tenantId    String
   firmId      String
   firmBrandId String?
+  locationId  String?  // Optional link to physical Location campus
   code        String   // e.g. "HBL-SHOWROOM-01", "BGM-WORKSHOP-02"
   name        String   // e.g. "Hubli Main Showroom", "Belgaum Bodyshop"
   outletType  String   @default("3S_FACILITY") // 3S, SHOWROOM, WORKSHOP, BODYSHOP, STOCKYARD
@@ -211,6 +255,9 @@ model Branch {
   tenant              Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   firm                Firm                     @relation(fields: [firmId], references: [id], onDelete: Cascade)
   firmBrand           FirmBrand?               @relation(fields: [firmBrandId], references: [id], onDelete: SetNull)
+  location            Location?                @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  branchBrands        BranchBrand[]
+  branchBusinessUnits BranchBusinessUnit[]
   departments         Department[]
   memberships         OrganizationMembership[]
   userRoleAssignments UserRoleAssignment[]
@@ -219,7 +266,88 @@ model Branch {
   @@index([tenantId])
   @@index([firmId])
   @@index([firmBrandId])
+  @@index([locationId])
   @@map("branches")
+}
+
+// ==========================================
+// 5B. BUSINESS UNIT (OPERATIONAL CAPABILITY)
+// ==========================================
+
+model BusinessUnit {
+  id          String   @id @default(uuid())
+  tenantId    String
+  code        String   // e.g. "SALES", "SERVICE", "SPARES", "BODYSHOP", "PDI", "USED_CARS", "ACCESSORIES"
+  name        String   // e.g. "New Vehicle Sales", "Mechanical Workshop & Service"
+  type        String   @default("3S_CORE") // 3S_CORE, VALUE_ADDED_SERVICE, SUPPORT
+  description String?
+  icon        String?  @default("Wrench")
+  isSystem    Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant              Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branchBusinessUnits BranchBusinessUnit[]
+  userRoleAssignments UserRoleAssignment[]
+  memberships         OrganizationMembership[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("business_units")
+}
+
+// ==========================================
+// 5C. BRANCH-BUSINESS UNIT (ACTIVE OUTLET CAPABILITY)
+// ==========================================
+
+model BranchBusinessUnit {
+  id                String   @id @default(uuid())
+  tenantId          String
+  branchId          String
+  businessUnitId    String
+  operationalStatus String   @default("ACTIVE") // ACTIVE, MAINTENANCE, TEMPORARILY_CLOSED
+  capacityUnits     Int?     // e.g. Number of service bays or showroom display spots
+  workingHours      Json?    // e.g. { "open": "09:00", "close": "19:00", "days": "Mon-Sat" }
+  settings          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch       Branch       @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  businessUnit BusinessUnit @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+
+  @@unique([branchId, businessUnitId])
+  @@index([tenantId])
+  @@index([branchId])
+  @@index([businessUnitId])
+  @@map("branch_business_units")
+}
+
+// ==========================================
+// 5D. BRANCH-BRAND (MULTI-BRAND OUTLET FRANCHISE)
+// ==========================================
+
+model BranchBrand {
+  id         String   @id @default(uuid())
+  tenantId   String
+  branchId   String
+  brandId    String
+  dealerCode String?  // OEM-specific dealer/outlet code (e.g. "HYU-BLR-04")
+  isPrimary  Boolean  @default(true)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  brand  Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@unique([branchId, brandId])
+  @@index([tenantId])
+  @@index([branchId])
+  @@index([brandId])
+  @@map("branch_brands")
 }
 
 // ==========================================
@@ -285,26 +413,29 @@ model User {
 // ==========================================
 
 model OrganizationMembership {
-  id           String   @id @default(uuid())
-  tenantId     String
-  userId       String
-  branchId     String
-  departmentId String?
-  isPrimary    Boolean  @default(false)
-  employeeCode String?  // Optional HR master employee code link
-  designation  String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String   @id @default(uuid())
+  tenantId       String
+  userId         String
+  branchId       String
+  departmentId   String?
+  businessUnitId String?
+  isPrimary      Boolean  @default(false)
+  employeeCode   String?  // Optional HR master employee code link
+  designation    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  branch     Branch      @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch       Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  department   Department?   @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  businessUnit BusinessUnit? @relation(fields: [businessUnitId], references: [id], onDelete: SetNull)
 
   @@unique([userId, branchId, departmentId])
   @@index([tenantId])
   @@index([userId])
   @@index([branchId])
+  @@index([businessUnitId])
   @@map("organization_memberships")
 }
 
@@ -439,30 +570,36 @@ model RolePermission {
 // ==========================================
 
 model UserRoleAssignment {
-  id           String    @id @default(uuid())
-  userId       String
-  roleId       String
-  tenantId     String
-  firmId       String?   // Optional firm scope
-  brandId      String?   // Optional brand scope
-  branchId     String?   // Optional branch scope
-  departmentId String?   // Optional department scope
-  scopeType    ScopeType @default(TENANT)
-  assignedBy   String?
-  createdAt    DateTime  @default(now())
+  id             String    @id @default(uuid())
+  userId         String
+  roleId         String
+  tenantId       String
+  firmId         String?   // Optional firm scope
+  brandId        String?   // Optional brand scope
+  locationId     String?   // Optional location scope
+  branchId       String?   // Optional branch scope
+  businessUnitId String?   // Optional business unit scope
+  departmentId   String?   // Optional department scope
+  scopeType      ScopeType @default(TENANT)
+  assignedBy     String?
+  createdAt      DateTime  @default(now())
 
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role       Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  firm       Firm?       @relation(fields: [firmId], references: [id], onDelete: SetNull)
-  brand      Brand?      @relation(fields: [brandId], references: [id], onDelete: SetNull)
-  branch     Branch?     @relation(fields: [branchId], references: [id], onDelete: SetNull)
-  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role         Role          @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  firm         Firm?         @relation(fields: [firmId], references: [id], onDelete: SetNull)
+  brand        Brand?        @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  location     Location?     @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  branch       Branch?       @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  businessUnit BusinessUnit? @relation(fields: [businessUnitId], references: [id], onDelete: SetNull)
+  department   Department?   @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([roleId])
   @@index([tenantId])
   @@index([branchId])
+  @@index([locationId])
+  @@index([businessUnitId])
   @@map("user_role_assignments")
 }
 

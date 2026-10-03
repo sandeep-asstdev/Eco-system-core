@@ -168,28 +168,51 @@ export default function Branches() {
                     </div>
                   </div>
 
-                  <div className="mt-3 space-y-1.5 text-xs text-slate-600">
+                  <div className="mt-3 space-y-2 text-xs text-slate-600">
                     <div className="flex items-center gap-2">
                       <Building className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="truncate">{branch.firm?.name || 'Firm Unlinked'}</span>
+                      <span className="truncate font-medium text-slate-800">{branch.firm?.name || 'Firm Unlinked'}</span>
                     </div>
-
-                    {branch.firmBrand && (
-                      <div className="flex items-center gap-2">
-                        <Car className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                        <span className="font-medium text-indigo-700">{branch.firmBrand.brand?.name}</span>
-                      </div>
-                    )}
 
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span>{branch.city}, {branch.state}</span>
+                      <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span className="truncate text-slate-700">
+                        {branch.location?.name ? `${branch.location.name} (${branch.city})` : `${branch.city}, ${branch.state}`}
+                      </span>
                     </div>
 
-                    {branch.phone && (
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span>{branch.phone}</span>
+                    {/* Multi-Brand Badges */}
+                    <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                      {branch.branchBrands && branch.branchBrands.length > 0 ? (
+                        branch.branchBrands.map(bb => (
+                          <span 
+                            key={bb.id}
+                            className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded"
+                          >
+                            <Car className="w-3 h-3 text-indigo-500" />
+                            <span>{bb.brand.name}</span>
+                          </span>
+                        ))
+                      ) : branch.firmBrand ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded">
+                          <Car className="w-3 h-3 text-indigo-500" />
+                          <span>{branch.firmBrand.brand?.name}</span>
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {/* 3S Capabilities Badges */}
+                    {branch.branchBusinessUnits && branch.branchBusinessUnits.length > 0 && (
+                      <div className="flex items-center gap-1 flex-wrap pt-1">
+                        {branch.branchBusinessUnits.map(bbu => (
+                          <span 
+                            key={bbu.id}
+                            className="text-[9px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200"
+                            title={bbu.businessUnit.name}
+                          >
+                            {bbu.businessUnit.code}
+                          </span>
+                        ))}
                       </div>
                     )}
                   </div>
