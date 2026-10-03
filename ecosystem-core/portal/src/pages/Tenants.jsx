@@ -264,12 +264,14 @@ export default function Tenants() {
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Contact Phone</label>
+              <label className="block font-semibold text-slate-700 mb-1">Contact Phone (10 digits)</label>
               <input
-                type="text"
+                type="tel"
+                inputMode="numeric"
+                maxLength={10}
                 value={formData.contactPhone}
-                onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-                placeholder="+91 98765 43210"
+                onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                placeholder="9876543210"
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>

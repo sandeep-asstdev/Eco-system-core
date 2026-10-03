@@ -507,10 +507,31 @@ export async function createBranch(req, res, next) {
       });
     }
 
+    let finalLocationId = req.body.locationId || null;
+    if (!finalLocationId && city) {
+      let loc = await prisma.location.findFirst({
+        where: { tenantId: effectiveTenantId, city: { equals: city.trim(), mode: 'insensitive' } }
+      });
+      if (!loc) {
+        loc = await prisma.location.create({
+          data: {
+            tenantId: effectiveTenantId,
+            code: `LOC-${city.toUpperCase().trim().replace(/[^A-Z0-9]/g, '')}`,
+            name: `${city.trim()} Campus`,
+            city: city.trim(),
+            state: state ? state.trim() : 'Karnataka',
+            address: address || `${city.trim()} Automotive Campus`
+          }
+        });
+      }
+      finalLocationId = loc.id;
+    }
+
     const branch = await prisma.branch.create({
       data: {
         tenantId: effectiveTenantId,
         firmId,
+        locationId: finalLocationId,
         firmBrandId: firmBrandId || null,
         code: normalizedCode,
         name: name.trim(),
@@ -523,8 +544,39 @@ export async function createBranch(req, res, next) {
         email,
         gstin
       },
-      include: { firm: true, firmBrand: { include: { brand: true } } }
+      include: { firm: true, location: true, firmBrand: { include: { brand: true } } }
     });
+
+    // Auto-link primary Brand if firmBrand exists
+    if (branch.firmBrand?.brandId) {
+      await prisma.branchBrand.upsert({
+        where: { branchId_brandId: { branchId: branch.id, brandId: branch.firmBrand.brandId } },
+        update: { isPrimary: true },
+        create: {
+          tenantId: effectiveTenantId,
+          branchId: branch.id,
+          brandId: branch.firmBrand.brandId,
+          isPrimary: true
+        }
+      });
+    }
+
+    // Auto-link default 3S capabilities
+    const defaultBus = await prisma.businessUnit.findMany({
+      where: { tenantId: effectiveTenantId, code: { in: ['SALES', 'SERVICE', 'SPARES'] } }
+    });
+    for (const bu of defaultBus) {
+      await prisma.branchBusinessUnit.upsert({
+        where: { branchId_businessUnitId: { branchId: branch.id, businessUnitId: bu.id } },
+        update: { operationalStatus: 'ACTIVE' },
+        create: {
+          tenantId: effectiveTenantId,
+          branchId: branch.id,
+          businessUnitId: bu.id,
+          operationalStatus: 'ACTIVE'
+        }
+      });
+    }
 
     // Auto-create standard departments for this branch
     const standardDepts = [

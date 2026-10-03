@@ -361,12 +361,14 @@ export default function Branches() {
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Phone</label>
+              <label className="block font-semibold text-slate-700 mb-1">Phone (10 digits)</label>
               <input
-                type="text"
+                type="tel"
+                inputMode="numeric"
+                maxLength={10}
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="+91 836 220011"
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                placeholder="9845012345"
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
