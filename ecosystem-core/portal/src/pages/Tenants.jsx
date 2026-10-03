@@ -14,6 +14,7 @@ export default function Tenants() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    legalName: '',
     code: '',
     plan: 'ENTERPRISE',
     contactEmail: '',
@@ -44,13 +45,33 @@ export default function Tenants() {
   const handleCreate = async (e) => {
     e.preventDefault();
     setError(null);
+
+    const nameTrimmed = formData.name.trim();
+    const legalNameTrimmed = formData.legalName.trim();
+    const codeTrimmed = formData.code.trim().toUpperCase();
+
+    if (!nameTrimmed || !legalNameTrimmed || !codeTrimmed) {
+      setError('Dealership Group Name, Legal Entity Name, and Tenant Code are required.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const res = await api.post('/tenants', formData);
+      const payload = {
+        name: nameTrimmed,
+        legalName: legalNameTrimmed,
+        code: codeTrimmed,
+        subscriptionTier: formData.plan,
+        primaryEmail: formData.contactEmail?.trim() || null,
+        primaryPhone: formData.contactPhone?.trim() || null
+      };
+
+      const res = await api.post('/tenants', payload);
       if (res.success) {
         setIsModalOpen(false);
         setFormData({
           name: '',
+          legalName: '',
           code: '',
           plan: 'ENTERPRISE',
           contactEmail: '',
@@ -155,6 +176,9 @@ export default function Tenants() {
                         </div>
                         <div>
                           <div>{t.name}</div>
+                          {t.legalName && t.legalName !== t.name && (
+                            <div className="text-[11px] font-normal text-slate-400">{t.legalName}</div>
+                          )}
                           {isActiveTenant && (
                             <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
                               Current Context
@@ -166,7 +190,7 @@ export default function Tenants() {
                     <td className="py-3.5 px-4 font-mono font-medium text-slate-600">{t.code}</td>
                     <td className="py-3.5 px-4">
                       <span className="px-2 py-0.5 text-[10px] font-bold rounded uppercase bg-indigo-50 text-indigo-700 border border-indigo-200">
-                        {t.plan}
+                        {t.subscriptionTier || t.plan || 'ENTERPRISE'}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-slate-600 font-medium">
@@ -228,25 +252,38 @@ export default function Tenants() {
           )}
 
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">Dealership Group Name</label>
+            <label className="block font-semibold text-slate-700 mb-1">Dealership Group Name *</label>
             <input
               type="text"
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g. Navnit Motors Group"
+              placeholder="e.g. Advait Group"
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">Tenant Code (Unique slug)</label>
+            <label className="block font-semibold text-slate-700 mb-1">Legal Entity Name *</label>
+            <input
+              type="text"
+              required
+              value={formData.legalName}
+              onChange={(e) => setFormData({ ...formData, legalName: e.target.value })}
+              placeholder="e.g. Advait Motors Private Limited"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <p className="text-[11px] text-slate-400 mt-1">Registered legal name of the dealership company/entity.</p>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1">Tenant Code (Unique slug) *</label>
             <input
               type="text"
               required
               value={formData.code}
               onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-              placeholder="NAVNIT_MOTORS"
+              placeholder="ADV_GRP"
               className="w-full px-3 py-2 font-mono border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>

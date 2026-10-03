@@ -114,7 +114,11 @@ export async function createTenant(req, res, next) {
       });
     }
 
-    if (primaryEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(primaryEmail)) {
+    const effectiveTier = subscriptionTier || req.body.plan || 'ENTERPRISE';
+    const effectiveEmail = primaryEmail !== undefined ? primaryEmail : (req.body.contactEmail || null);
+    const effectivePhone = primaryPhone !== undefined ? primaryPhone : (req.body.contactPhone || null);
+
+    if (effectiveEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(effectiveEmail)) {
       return res.status(400).json({
         success: false,
         error: { code: 'VALIDATION_ERROR', message: 'Invalid primaryEmail format.' }
@@ -135,10 +139,10 @@ export async function createTenant(req, res, next) {
         code: normalizedCode,
         name: name.trim(),
         legalName: legalName.trim(),
-        subscriptionTier: subscriptionTier || 'ENTERPRISE',
+        subscriptionTier: effectiveTier,
         primaryContact,
-        primaryEmail,
-        primaryPhone,
+        primaryEmail: effectiveEmail,
+        primaryPhone: effectivePhone,
         addressLine1,
         addressLine2,
         city,
