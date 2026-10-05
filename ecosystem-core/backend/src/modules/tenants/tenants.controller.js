@@ -1,4 +1,5 @@
 import prisma from '../../config/db.js';
+import bcrypt from 'bcryptjs';
 
 export async function getTenants(req, res, next) {
   try {
@@ -107,11 +108,18 @@ export async function createTenant(req, res, next) {
       addressLine1, addressLine2, city, state, pincode, country
     } = req.body;
 
-    if (!code || !name || !legalName) {
+    const effectiveName = name?.trim();
+    if (!effectiveName) {
       return res.status(400).json({
         success: false,
-        error: { code: 'VALIDATION_ERROR', message: 'Tenant code, name, and legalName are required.' }
+        error: { code: 'VALIDATION_ERROR', message: 'Tenant name is required.' }
       });
+    }
+
+    const effectiveLegalName = (legalName || req.body.legalEntityName || effectiveName).trim();
+    let normalizedCode = (code || req.body.tenantCode || '').toUpperCase().trim();
+    if (!normalizedCode) {
+      normalizedCode = effectiveName.toUpperCase().replace(/[^A-Z0-9]/g, '_').slice(0, 16);
     }
 
     const effectiveTier = subscriptionTier || req.body.plan || 'ENTERPRISE';
@@ -125,20 +133,23 @@ export async function createTenant(req, res, next) {
       });
     }
 
-    const normalizedCode = code.toUpperCase().trim();
-    const existing = await prisma.tenant.findUnique({ where: { code: normalizedCode } });
+    let existing = await prisma.tenant.findUnique({ where: { code: normalizedCode } });
     if (existing) {
-      return res.status(409).json({
-        success: false,
-        error: { code: 'CONFLICT', message: `Tenant with code '${normalizedCode}' already exists.` }
-      });
+      if (req.body.code) {
+        return res.status(409).json({
+          success: false,
+          error: { code: 'CONFLICT', message: `Tenant with code '${normalizedCode}' already exists.` }
+        });
+      } else {
+        normalizedCode = `${normalizedCode.slice(0, 12)}_${Math.floor(10 + Math.random() * 89)}`;
+      }
     }
 
     const tenant = await prisma.tenant.create({
       data: {
         code: normalizedCode,
-        name: name.trim(),
-        legalName: legalName.trim(),
+        name: effectiveName,
+        legalName: effectiveLegalName,
         subscriptionTier: effectiveTier,
         primaryContact,
         primaryEmail: effectiveEmail,
@@ -163,6 +174,69 @@ export async function createTenant(req, res, next) {
           planName: 'STANDARD'
         }
       });
+    }
+
+    // Seed Standard 3S Business Units
+    const standardUnits = [
+      { code: 'SALES', name: 'New Vehicle Sales', type: '3S_CORE', icon: 'Car' },
+      { code: 'SERVICE', name: 'Mechanical Workshop & Service', type: '3S_CORE', icon: 'Wrench' },
+      { code: 'SPARES', name: 'Genuine Spares & Parts Depot', type: '3S_CORE', icon: 'Boxes' },
+      { code: 'BODYSHOP', name: 'Accidental Repair & Paint Booth', type: 'VALUE_ADDED_SERVICE', icon: 'Paintbrush' },
+      { code: 'PDI', name: 'Pre-Delivery Inspection & Fitment', type: 'SUPPORT', icon: 'ClipboardCheck' },
+      { code: 'USED_CARS', name: 'Pre-Owned Vehicle Exchange', type: 'VALUE_ADDED_SERVICE', icon: 'RefreshCw' },
+      { code: 'ACCESSORIES', name: 'Accessories & Lifestyle Store', type: 'VALUE_ADDED_SERVICE', icon: 'Sparkles' },
+      { code: 'INSURANCE_FINANCE', name: 'Insurance & Finance Desk', type: 'SUPPORT', icon: 'ShieldCheck' },
+      { code: 'CUSTOMER_RELATIONS', name: 'Customer Experience & CRM', type: 'SUPPORT', icon: 'Users' }
+    ];
+
+    for (const u of standardUnits) {
+      await prisma.businessUnit.create({
+        data: {
+          tenantId: tenant.id,
+          code: u.code,
+          name: u.name,
+          type: u.type,
+          icon: u.icon,
+          isSystem: true,
+          isActive: true
+        }
+      }).catch(() => null);
+    }
+
+    // Provision Initial Tenant Administrator if contact email or admin email provided
+    const targetAdminEmail = (req.body.adminEmail || effectiveEmail)?.toLowerCase()?.trim();
+    if (targetAdminEmail) {
+      const existingUser = await prisma.user.findUnique({ where: { email: targetAdminEmail } });
+      if (!existingUser) {
+        const passwordToHash = req.body.adminPassword || 'Admin@123';
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(passwordToHash, salt);
+        const tenantAdminRole = await prisma.role.findFirst({ where: { code: 'TENANT_ADMIN' } });
+
+        const adminUser = await prisma.user.create({
+          data: {
+            tenantId: tenant.id,
+            email: targetAdminEmail,
+            username: targetAdminEmail.split('@')[0],
+            passwordHash,
+            firstName: req.body.adminName ? req.body.adminName.split(' ')[0] : (name.split(' ')[0] || 'Dealership'),
+            lastName: req.body.adminName ? (req.body.adminName.split(' ').slice(1).join(' ') || 'Admin') : 'Admin',
+            phone: effectivePhone,
+            status: 'ACTIVE'
+          }
+        });
+
+        if (tenantAdminRole) {
+          await prisma.userRoleAssignment.create({
+            data: {
+              userId: adminUser.id,
+              roleId: tenantAdminRole.id,
+              tenantId: tenant.id,
+              scopeType: 'TENANT'
+            }
+          });
+        }
+      }
     }
 
     // Log in audit trail

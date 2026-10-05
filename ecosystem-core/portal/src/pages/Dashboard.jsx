@@ -264,8 +264,33 @@ export default function Dashboard({ onNavigate }) {
         {/* Tree Render */}
         <div className="space-y-4">
           {filteredFirms.length === 0 ? (
-            <div className="text-center py-8 text-xs text-slate-400">
-              No legal operating entities found for this view.
+            <div className="text-center py-12 px-6 bg-slate-50/70 rounded-2xl border-2 border-dashed border-slate-200">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
+                <Building2 className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900">
+                Welcome to {orgData?.tenant?.name || tenant?.name || 'Dealership Holding Group'} Dashboard!
+              </h3>
+              <p className="text-xs text-slate-500 max-w-lg mx-auto mt-1 mb-5 leading-relaxed">
+                Your holding group context is established, enterprise applications (HRFlow, MAINTLY, DemoApp, Purchase) are subscribed, and 9 standard 3S business units (Sales, Service, Spares, Bodyshop, PDI) are initialized.
+                Next, configure your first legal operating firm and authorized OEM franchise brands.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <button
+                  onClick={() => onNavigate('/firms-brands')}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition inline-flex items-center gap-2"
+                >
+                  <Building2 className="w-4 h-4" />
+                  <span>Register First Operating Firm & Brand →</span>
+                </button>
+                <button
+                  onClick={() => onNavigate('/branches')}
+                  className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold text-xs rounded-xl shadow-xs transition inline-flex items-center gap-2"
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span>Set Up Dealership Outlets</span>
+                </button>
+              </div>
             </div>
           ) : (
             filteredFirms.map((firm) => {

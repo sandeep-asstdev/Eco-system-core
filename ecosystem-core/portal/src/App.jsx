@@ -4,8 +4,8 @@ import Sidebar from './components/layout/Sidebar.jsx';
 import Header from './components/layout/Header.jsx';
 import LoadingSpinner from './components/common/LoadingSpinner.jsx';
 
-// Pages
 import Login from './pages/Login.jsx';
+import Signup from './pages/Signup.jsx';
 import Callback from './pages/Callback.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Tenants from './pages/Tenants.jsx';
@@ -48,8 +48,12 @@ function MainLayout() {
     );
   }
 
+  if (currentPath === '/signup') {
+    return <Signup onNavigate={navigate} />;
+  }
+
   if (!isAuthenticated || currentPath === '/login') {
-    return <Login />;
+    return <Login onNavigate={navigate} />;
   }
 
   const renderPage = () => {

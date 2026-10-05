@@ -132,6 +132,30 @@ export const authService = {
     throw new Error(res.error?.message || 'Login failed');
   },
 
+  async directSignup(payload) {
+    const res = await api.post('/auth/signup', payload);
+    if (res.success && res.data) {
+      api.setToken(res.data.token);
+      if (res.data.tenant?.id) {
+        api.setTenantId(res.data.tenant.id);
+      }
+
+      try {
+        await fetch(`${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email: res.data.user.email })
+        });
+      } catch (err) {
+        console.warn('[SSO] Keycloak session synchronization warning:', err.message);
+      }
+
+      return res.data;
+    }
+    throw new Error(res.error?.message || 'Registration failed');
+  },
+
   logout() {
     api.setToken(null);
     api.setTenantId(null);

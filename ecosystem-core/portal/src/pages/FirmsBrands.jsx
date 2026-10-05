@@ -22,6 +22,7 @@ export default function FirmsBrands() {
   // Form states
   const [firmForm, setFirmForm] = useState({
     name: '',
+    code: '',
     legalName: '',
     pan: '',
     gstin: '',
@@ -33,9 +34,11 @@ export default function FirmsBrands() {
 
   const [brandForm, setBrandForm] = useState({
     name: '',
+    code: '',
     oemCompany: '',
     country: 'India',
-    logoUrl: ''
+    logoUrl: '',
+    description: ''
   });
 
   const [linkForm, setLinkForm] = useState({
@@ -76,10 +79,21 @@ export default function FirmsBrands() {
     setIsSubmitting(true);
     setError(null);
     try {
-      await api.post('/org/firms', firmForm);
+      const payload = {
+        name: firmForm.name.trim(),
+        code: firmForm.code ? firmForm.code.trim().toUpperCase() : undefined,
+        panNumber: firmForm.pan?.trim()?.toUpperCase() || null,
+        pan: firmForm.pan?.trim()?.toUpperCase() || null,
+        gstin: firmForm.gstin?.trim()?.toUpperCase() || null,
+        cin: firmForm.cin?.trim()?.toUpperCase() || null,
+        state: firmForm.state?.trim() || 'Karnataka',
+        registeredAt: firmForm.state?.trim() || 'Karnataka'
+      };
+      await api.post('/org/firms', payload);
       setIsFirmModalOpen(false);
       setFirmForm({
         name: '',
+        code: '',
         legalName: '',
         pan: '',
         gstin: '',
@@ -101,9 +115,17 @@ export default function FirmsBrands() {
     setIsSubmitting(true);
     setError(null);
     try {
-      await api.post('/org/brands', brandForm);
+      const payload = {
+        name: brandForm.name.trim(),
+        code: brandForm.code ? brandForm.code.trim().toUpperCase() : undefined,
+        oemCompany: brandForm.oemCompany?.trim() || null,
+        country: brandForm.country?.trim() || 'India',
+        logoUrl: brandForm.logoUrl?.trim() || null,
+        description: brandForm.description?.trim() || null
+      };
+      await api.post('/org/brands', payload);
       setIsBrandModalOpen(false);
-      setBrandForm({ name: '', oemCompany: '', country: 'India', logoUrl: '' });
+      setBrandForm({ name: '', code: '', oemCompany: '', country: 'India', logoUrl: '', description: '' });
       await fetchData();
     } catch (err) {
       setError(err.message);
@@ -117,7 +139,15 @@ export default function FirmsBrands() {
     setIsSubmitting(true);
     setError(null);
     try {
-      await api.post('/org/firm-brands', linkForm);
+      const payload = {
+        firmId: linkForm.firmId,
+        brandId: linkForm.brandId,
+        dealerAgreementNo: linkForm.dealerCode?.trim() || null,
+        dealerCode: linkForm.dealerCode?.trim() || null,
+        agreementExpiry: linkForm.contractValidUntil || null,
+        contractValidUntil: linkForm.contractValidUntil || null
+      };
+      await api.post('/org/firm-brands', payload);
       setIsLinkModalOpen(false);
       setLinkForm({ firmId: '', brandId: '', dealerCode: '', contractValidUntil: '' });
       await fetchData();
@@ -318,16 +348,40 @@ export default function FirmsBrands() {
         <form onSubmit={handleCreateFirm} className="space-y-4 text-xs">
           {error && <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg">{error}</div>}
 
-          <div>
-            <label className="block font-semibold text-slate-700 mb-1">Firm Display Name</label>
-            <input
-              type="text"
-              required
-              value={firmForm.name}
-              onChange={(e) => setFirmForm({ ...firmForm, name: e.target.value })}
-              placeholder="e.g. Bellad Auto LLP"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">Firm Display Name *</label>
+              <input
+                type="text"
+                required
+                value={firmForm.name}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const autoCode = val.toUpperCase().replace(/[^A-Z0-9]/g, '_').replace(/_+/g, '_').slice(0, 20);
+                  setFirmForm(prev => ({
+                    ...prev,
+                    name: val,
+                    code: prev.code && prev.code !== prev.name.toUpperCase().replace(/[^A-Z0-9]/g, '_').replace(/_+/g, '_').slice(0, 20)
+                      ? prev.code
+                      : autoCode
+                  }));
+                }}
+                placeholder="e.g. Advait Motors Pvt Ltd"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">Firm Code (Identifier) *</label>
+              <input
+                type="text"
+                required
+                maxLength={20}
+                value={firmForm.code}
+                onChange={(e) => setFirmForm({ ...firmForm, code: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '') })}
+                placeholder="e.g. ADV_PVT_LTD"
+                className="w-full px-3 py-2 font-mono uppercase bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -335,7 +389,6 @@ export default function FirmsBrands() {
               <label className="block font-semibold text-slate-700 mb-1">PAN (Indian Tax ID)</label>
               <input
                 type="text"
-                required
                 maxLength={10}
                 value={firmForm.pan}
                 onChange={(e) => setFirmForm({ ...firmForm, pan: e.target.value.toUpperCase() })}
@@ -347,7 +400,6 @@ export default function FirmsBrands() {
               <label className="block font-semibold text-slate-700 mb-1">GSTIN</label>
               <input
                 type="text"
-                required
                 maxLength={15}
                 value={firmForm.gstin}
                 onChange={(e) => setFirmForm({ ...firmForm, gstin: e.target.value.toUpperCase() })}
@@ -394,6 +446,100 @@ export default function FirmsBrands() {
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm disabled:opacity-50"
             >
               {isSubmitting ? 'Saving...' : 'Register Firm'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Brand Modal */}
+      <Modal isOpen={isBrandModalOpen} onClose={() => setIsBrandModalOpen(false)} title="Register Authorized OEM Brand">
+        <form onSubmit={handleCreateBrand} className="space-y-4 text-xs">
+          {error && <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg">{error}</div>}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">Brand Name *</label>
+              <input
+                type="text"
+                required
+                value={brandForm.name}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const autoCode = val.toUpperCase().replace(/[^A-Z0-9]/g, '_').replace(/_+/g, '_').slice(0, 15);
+                  setBrandForm(prev => ({
+                    ...prev,
+                    name: val,
+                    code: prev.code && prev.code !== prev.name.toUpperCase().replace(/[^A-Z0-9]/g, '_').replace(/_+/g, '_').slice(0, 15)
+                      ? prev.code
+                      : autoCode
+                  }));
+                }}
+                placeholder="e.g. Tata Motors / Kia"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">Brand Code *</label>
+              <input
+                type="text"
+                required
+                maxLength={15}
+                value={brandForm.code}
+                onChange={(e) => setBrandForm({ ...brandForm, code: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '') })}
+                placeholder="e.g. TATA / KIA"
+                className="w-full px-3 py-2 font-mono uppercase bg-slate-50/50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">OEM Parent Corporation</label>
+              <input
+                type="text"
+                value={brandForm.oemCompany}
+                onChange={(e) => setBrandForm({ ...brandForm, oemCompany: e.target.value })}
+                placeholder="e.g. Tata Motors Limited"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1">Country of Origin</label>
+              <input
+                type="text"
+                value={brandForm.country}
+                onChange={(e) => setBrandForm({ ...brandForm, country: e.target.value })}
+                placeholder="India"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1">Brand Logo URL (Optional)</label>
+            <input
+              type="url"
+              value={brandForm.logoUrl}
+              onChange={(e) => setBrandForm({ ...brandForm, logoUrl: e.target.value })}
+              placeholder="https://example.com/logo.png"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setIsBrandModalOpen(false)}
+              className="px-3 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm disabled:opacity-50"
+            >
+              {isSubmitting ? 'Registering...' : 'Register OEM Brand'}
             </button>
           </div>
         </form>

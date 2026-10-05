@@ -104,6 +104,29 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const signup = async (payload) => {
+    setIsLoading(true);
+    try {
+      const data = await authService.directSignup(payload);
+      setToken(data.token);
+      setUser(data.user);
+      setTenant(data.tenant);
+      setMemberships(data.memberships || []);
+      setRoles(data.roles || []);
+      setPermissions(data.permissions || []);
+      setApplications(data.applications || []);
+
+      localStorage.setItem('ecosystem_user', JSON.stringify(data.user));
+      if (data.tenant) {
+        localStorage.setItem('ecosystem_tenant', JSON.stringify(data.tenant));
+      }
+
+      return data;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const loginWithKeycloak = () => {
     return authService.initiateKeycloakLogin();
   };
@@ -196,6 +219,7 @@ export function AuthProvider({ children }) {
         isLoading,
         isPlatformAdmin,
         login,
+        signup,
         loginWithKeycloak,
         handleKeycloakCallback,
         logout,

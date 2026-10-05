@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { Car, Lock, Mail, ArrowRight, Shield, AlertCircle, Key } from 'lucide-react';
 
-export default function Login() {
+export default function Login({ onNavigate }) {
   const { login, loginWithKeycloak } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -111,12 +111,38 @@ export default function Login() {
             </button>
           </form>
 
+          {/* New Dealership Register Link */}
+          <div className="text-center pt-1">
+            <p className="text-xs text-slate-500">
+              New dealership holding group?{' '}
+              <button
+                type="button"
+                onClick={() => onNavigate ? onNavigate('/signup') : (window.location.href = '/signup')}
+                className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition"
+              >
+                Register & Enter Dashboard →
+              </button>
+            </p>
+          </div>
+
           {/* One-Click Personas */}
           <div className="pt-2 border-t border-slate-100">
             <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
               Quick Test Personas
             </p>
             <div className="grid grid-cols-1 gap-1.5">
+              <button
+                type="button"
+                onClick={() => setPersona('hello@gmail.com', 'Admin@123')}
+                className="text-left p-2 rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition flex items-center justify-between text-xs"
+              >
+                <div>
+                  <div className="font-semibold text-slate-800">Advait Group Admin</div>
+                  <div className="text-[10px] text-slate-500">hello@gmail.com (Advait Motors)</div>
+                </div>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded">ADVAIT_GRP</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setPersona('admin@ecosystem.com')}

@@ -84,13 +84,25 @@ export async function getFirmById(req, res, next) {
 
 export async function createFirm(req, res, next) {
   try {
-    const { code, name, panNumber, gstin, cin, tanNumber, registeredAt } = req.body;
-    if (!code || !name) {
+    const name = req.body.name?.trim();
+    if (!name) {
       return res.status(400).json({
         success: false,
-        error: { code: 'VALIDATION_ERROR', message: 'Firm code and name are required.' }
+        error: { code: 'VALIDATION_ERROR', message: 'Firm name is required.' }
       });
     }
+
+    let code = req.body.code || req.body.firmCode;
+    if (!code || !code.trim()) {
+      code = name.toUpperCase().replace(/[^A-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').slice(0, 20);
+    }
+    let normalizedCode = code.toUpperCase().trim();
+
+    const panNumber = req.body.panNumber || req.body.pan;
+    const gstin = req.body.gstin;
+    const cin = req.body.cin;
+    const tanNumber = req.body.tanNumber || req.body.tan;
+    const registeredAt = req.body.registeredAt || req.body.state;
 
     const targetTenantId = req.tenantId || req.headers['x-tenant-id'] || req.body.tenantId;
     if (!targetTenantId) {
@@ -100,17 +112,19 @@ export async function createFirm(req, res, next) {
       });
     }
 
-    const normalizedCode = code.toUpperCase().trim();
-
     // Check unique code per tenant
     const existing = await prisma.firm.findUnique({
       where: { tenantId_code: { tenantId: targetTenantId, code: normalizedCode } }
     });
     if (existing) {
-      return res.status(409).json({
-        success: false,
-        error: { code: 'CONFLICT', message: `Firm code '${normalizedCode}' already exists in your dealership.` }
-      });
+      if (req.body.code) {
+        return res.status(409).json({
+          success: false,
+          error: { code: 'CONFLICT', message: `Firm code '${normalizedCode}' already exists in your dealership.` }
+        });
+      } else {
+        normalizedCode = `${normalizedCode.slice(0, 16)}_${Math.floor(10 + Math.random() * 89)}`;
+      }
     }
 
     // Validate PAN if provided (10 characters alphanumeric)
@@ -243,13 +257,20 @@ export async function getBrandById(req, res, next) {
 
 export async function createBrand(req, res, next) {
   try {
-    const { code, name, logoUrl, description } = req.body;
-    if (!code || !name) {
+    const { logoUrl, description } = req.body;
+    const name = req.body.name?.trim();
+    if (!name) {
       return res.status(400).json({
         success: false,
-        error: { code: 'VALIDATION_ERROR', message: 'Brand code and name are required.' }
+        error: { code: 'VALIDATION_ERROR', message: 'Brand name is required.' }
       });
     }
+
+    let code = req.body.code || req.body.brandCode;
+    if (!code || !code.trim()) {
+      code = name.toUpperCase().replace(/[^A-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').slice(0, 20);
+    }
+    let normalizedCode = code.toUpperCase().trim();
 
     const targetTenantId = req.tenantId || req.headers['x-tenant-id'] || req.body.tenantId;
     if (!targetTenantId) {
@@ -259,15 +280,18 @@ export async function createBrand(req, res, next) {
       });
     }
 
-    const normalizedCode = code.toUpperCase().trim();
     const existing = await prisma.brand.findUnique({
       where: { tenantId_code: { tenantId: targetTenantId, code: normalizedCode } }
     });
     if (existing) {
-      return res.status(409).json({
-        success: false,
-        error: { code: 'CONFLICT', message: `Brand with code '${normalizedCode}' already exists in your dealership.` }
-      });
+      if (req.body.code) {
+        return res.status(409).json({
+          success: false,
+          error: { code: 'CONFLICT', message: `Brand with code '${normalizedCode}' already exists in your dealership.` }
+        });
+      } else {
+        normalizedCode = `${normalizedCode.slice(0, 16)}_${Math.floor(10 + Math.random() * 89)}`;
+      }
     }
 
     const brand = await prisma.brand.create({
@@ -319,7 +343,10 @@ export async function getFirmBrands(req, res, next) {
 
 export async function linkFirmBrand(req, res, next) {
   try {
-    const { firmId, brandId, dealerAgreementNo, agreementExpiry } = req.body;
+    const { firmId, brandId } = req.body;
+    const dealerAgreementNo = req.body.dealerAgreementNo || req.body.dealerCode;
+    const agreementExpiry = req.body.agreementExpiry || req.body.contractValidUntil;
+
     if (!firmId || !brandId) {
       return res.status(400).json({
         success: false,
@@ -475,15 +502,24 @@ export async function getBranchById(req, res, next) {
 export async function createBranch(req, res, next) {
   try {
     const {
-      firmId, firmBrandId, code, name, outletType, address, city, state, pincode, phone, email, gstin
+      firmId, firmBrandId, address, city, state, pincode, phone, email, gstin
     } = req.body;
 
-    if (!firmId || !code || !name || !city || !state) {
+    const name = req.body.name?.trim();
+    if (!firmId || !name || !city || !state) {
       return res.status(400).json({
         success: false,
-        error: { code: 'VALIDATION_ERROR', message: 'firmId, code, name, city, and state are required.' }
+        error: { code: 'VALIDATION_ERROR', message: 'firmId, name, city, and state are required.' }
       });
     }
+
+    let code = req.body.code || req.body.branchCode;
+    if (!code || !code.trim()) {
+      code = `${name.toUpperCase().replace(/[^A-Z0-9]/g, '_').slice(0, 8)}_${city.toUpperCase().trim().replace(/[^A-Z0-9]/g, '').slice(0, 4)}_01`;
+    }
+    let normalizedCode = code.toUpperCase().trim();
+
+    const outletType = req.body.outletType || req.body.type || '3S_FACILITY';
 
     const tenantFilter = resolveTenantScope(req);
     // Verify firm belongs to tenant
@@ -496,15 +532,18 @@ export async function createBranch(req, res, next) {
     }
 
     const effectiveTenantId = firm.tenantId;
-    const normalizedCode = code.toUpperCase().trim();
     const existing = await prisma.branch.findUnique({
       where: { tenantId_code: { tenantId: effectiveTenantId, code: normalizedCode } }
     });
     if (existing) {
-      return res.status(409).json({
-        success: false,
-        error: { code: 'CONFLICT', message: `Branch with code '${normalizedCode}' already exists.` }
-      });
+      if (req.body.code) {
+        return res.status(409).json({
+          success: false,
+          error: { code: 'CONFLICT', message: `Branch with code '${normalizedCode}' already exists.` }
+        });
+      } else {
+        normalizedCode = `${normalizedCode.slice(0, 16)}_${Math.floor(10 + Math.random() * 89)}`;
+      }
     }
 
     let finalLocationId = req.body.locationId || null;
@@ -520,7 +559,7 @@ export async function createBranch(req, res, next) {
             name: `${city.trim()} Campus`,
             city: city.trim(),
             state: state ? state.trim() : 'Karnataka',
-            address: address || `${city.trim()} Automotive Campus`
+            addressLine1: address || `${city.trim()} Automotive Campus`
           }
         });
       }
@@ -865,16 +904,23 @@ export async function getLocationById(req, res, next) {
 export async function createLocation(req, res, next) {
   try {
     const {
-      code, name, type, addressLine1, addressLine2, city, state, pincode, country,
+      name, type, addressLine1, addressLine2, city, state, pincode, country,
       latitude, longitude, plotNumber, surveyNumber, totalAreaSqFt, metadata
     } = req.body;
 
-    if (!code || !name || !city || !state) {
+    const rawName = name?.trim();
+    if (!rawName || !city || !state) {
       return res.status(400).json({
         success: false,
-        error: { code: 'VALIDATION_ERROR', message: 'code, name, city, and state are required to create a physical location.' }
+        error: { code: 'VALIDATION_ERROR', message: 'name, city, and state are required to create a physical location.' }
       });
     }
+
+    let code = req.body.code || req.body.locationCode;
+    if (!code || !code.trim()) {
+      code = `LOC_${city.toUpperCase().trim().replace(/[^A-Z0-9]/g, '').slice(0, 10)}_${Math.floor(10 + Math.random() * 89)}`;
+    }
+    let normalizedCode = code.toUpperCase().trim();
 
     const targetTenantId = req.tenantId || req.headers['x-tenant-id'] || req.body.tenantId;
     if (!targetTenantId) {
@@ -884,15 +930,18 @@ export async function createLocation(req, res, next) {
       });
     }
 
-    const normalizedCode = code.toUpperCase().trim();
     const existing = await prisma.location.findUnique({
       where: { tenantId_code: { tenantId: targetTenantId, code: normalizedCode } }
     });
     if (existing) {
-      return res.status(409).json({
-        success: false,
-        error: { code: 'CONFLICT', message: `Physical location with code '${normalizedCode}' already exists.` }
-      });
+      if (req.body.code) {
+        return res.status(409).json({
+          success: false,
+          error: { code: 'CONFLICT', message: `Physical location with code '${normalizedCode}' already exists.` }
+        });
+      } else {
+        normalizedCode = `${normalizedCode.slice(0, 16)}_${Math.floor(10 + Math.random() * 89)}`;
+      }
     }
 
     const location = await prisma.location.create({

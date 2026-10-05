@@ -10,7 +10,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "node prisma/seed.js",
-    "test": "node tests/core.test.js && node tests/phase3.test.js && node tests/keycloak.test.js && node tests/portal-integration.test.js"
+    "test": "node tests/core.test.js && node tests/phase3.test.js && node tests/keycloak.test.js && node tests/portal-integration.test.js && node tests/formContractResilience.test.js"
   },
   "dependencies": {
     "@automobile-ecosystem/sdk": "file:../../packages/ecosystem-sdk",

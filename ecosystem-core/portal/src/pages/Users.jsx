@@ -95,7 +95,12 @@ export default function Users() {
     setIsSubmitting(true);
     setError(null);
     try {
-      await api.post('/users', createForm);
+      const payload = {
+        ...createForm,
+        branchId: createForm.primaryBranchId || undefined,
+        primaryBranchId: createForm.primaryBranchId || undefined
+      };
+      await api.post('/users', payload);
       setIsCreateModalOpen(false);
       setCreateForm({
         email: '',

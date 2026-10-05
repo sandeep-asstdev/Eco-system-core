@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Building2, Plus, Shield, CheckCircle, XCircle, Search, RefreshCw } from 'lucide-react';
+import { Building2, Plus, Shield, CheckCircle, XCircle, Search, RefreshCw, ArrowRight } from 'lucide-react';
 import LoadingSpinner from '../components/common/LoadingSpinner.jsx';
 import Modal from '../components/common/Modal.jsx';
 import UnauthorizedScreen from '../components/common/UnauthorizedScreen.jsx';
 
-export default function Tenants() {
+export default function Tenants({ onNavigate }) {
   const { isPlatformAdmin, hasPermission, switchTenant, tenant: currentTenant } = useAuth();
   const [tenants, setTenants] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [createdTenant, setCreatedTenant] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     legalName: '',
@@ -23,6 +24,15 @@ export default function Tenants() {
   });
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleEnterDashboard = (targetTenant) => {
+    switchTenant(targetTenant);
+    if (onNavigate) {
+      onNavigate('/');
+    } else {
+      window.location.href = '/';
+    }
+  };
 
   const fetchTenants = async () => {
     setIsLoading(true);
@@ -69,6 +79,7 @@ export default function Tenants() {
       const res = await api.post('/tenants', payload);
       if (res.success) {
         setIsModalOpen(false);
+        setCreatedTenant(res.data);
         setFormData({
           name: '',
           legalName: '',
@@ -148,6 +159,38 @@ export default function Tenants() {
         </button>
       </div>
 
+      {/* Onboarding Success Banner */}
+      {createdTenant && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs shadow-xs animate-fadeIn">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
+              ✓
+            </div>
+            <div>
+              <p className="font-bold text-slate-900 text-sm">{createdTenant.name} Successfully Onboarded!</p>
+              <p className="text-slate-600 text-[11px] mt-0.5">
+                Holding group context and 3S operational capabilities are active. Ready to manage corporate firms and dealership branches.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => handleEnterDashboard(createdTenant)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition"
+            >
+              <span>Enter {createdTenant.name} Dashboard Now</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setCreatedTenant(null)}
+              className="px-3 py-2 text-slate-500 hover:text-slate-700 text-xs font-medium"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Tenants Table */}
       {isLoading ? (
         <LoadingSpinner text="Fetching registered dealership tenants..." />
@@ -207,10 +250,18 @@ export default function Tenants() {
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleEnterDashboard(t)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs transition"
+                          title={`Enter ${t.name} Dashboard`}
+                        >
+                          <span>Enter Dashboard</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
                         {isPlatformAdmin && (
                           <button
                             onClick={() => switchTenant(t)}
-                            className="px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
+                            className="px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
                           >
                             Switch Context
                           </button>
@@ -218,7 +269,7 @@ export default function Tenants() {
                         {isPlatformAdmin && (
                           <button
                             onClick={() => toggleStatus(t.id, t.status)}
-                            className={`px-2.5 py-1 text-xs font-medium rounded-lg transition ${t.status === 'ACTIVE'
+                            className={`px-2.5 py-1.5 text-xs font-medium rounded-lg transition ${t.status === 'ACTIVE'
                                 ? 'text-rose-700 bg-rose-50 hover:bg-rose-100'
                                 : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
                               }`}

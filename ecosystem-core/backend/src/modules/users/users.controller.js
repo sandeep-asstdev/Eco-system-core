@@ -183,12 +183,13 @@ export async function createUser(req, res, next) {
     });
 
     // Add branch membership if provided
-    if (branchId) {
+    const effectiveBranchId = branchId || req.body.primaryBranchId;
+    if (effectiveBranchId) {
       await prisma.organizationMembership.create({
         data: {
           tenantId,
           userId: user.id,
-          branchId,
+          branchId: effectiveBranchId,
           departmentId: departmentId || null,
           designation,
           employeeCode,

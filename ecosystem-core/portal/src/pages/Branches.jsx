@@ -60,7 +60,13 @@ export default function Branches() {
     setIsSubmitting(true);
     setError(null);
     try {
-      await api.post('/org/branches', formData);
+      const payload = {
+        ...formData,
+        code: formData.code?.trim()?.toUpperCase() || undefined,
+        outletType: formData.type || 'SHOWROOM',
+        type: formData.type || 'SHOWROOM'
+      };
+      await api.post('/org/branches', payload);
       setIsModalOpen(false);
       setFormData({
         name: '',
@@ -283,7 +289,15 @@ export default function Branches() {
               type="text"
               required
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => {
+                const val = e.target.value;
+                const autoSlug = val.toUpperCase().replace(/[^A-Z0-9]/g, '_').slice(0, 16);
+                setFormData(prev => ({
+                  ...prev,
+                  name: val,
+                  code: (!prev.code || prev.code === prev.name.toUpperCase().replace(/[^A-Z0-9]/g, '_').slice(0, 16)) ? autoSlug : prev.code
+                }));
+              }}
               placeholder="e.g. Hubli Kia Experience Center"
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
