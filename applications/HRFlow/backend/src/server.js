@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { execSync } = require('child_process');
 const app = require('./app');
 const prisma = require('./config/db');
@@ -5,45 +6,49 @@ const outboxPublisher = require('./services/outboxPublisher');
 
 const PORT = process.env.PORT || 5000;
 
-async function ensureDatabaseConnected(maxRetries = 5, delayMs = 1500) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+async function checkDatabaseConnection() {
+  if (!process.env.DATABASE_URL) {
+    console.warn('⚠️ [HRFLOW_DB] WARNING: DATABASE_URL is not explicitly set in environment variables.');
+    console.warn('👉 Please configure DATABASE_URL in your Render Dashboard -> Environment.');
+  }
+
+  try {
+    await prisma.$connect();
+    console.log('✅ [HRFLOW_DB] Connected to PostgreSQL (hrflow_db) successfully.');
     try {
-      await prisma.$connect();
-      console.log('Connected to PostgreSQL (hrflow_db) via Prisma successfully.');
-      return;
-    } catch (error) {
-      if (attempt === 1) {
-        console.warn(`[HRFLOW_DB] PostgreSQL connection failed (attempt 1/${maxRetries}). Auto-starting postgresql-x64-18 service...`);
-        try {
-          if (process.platform === 'win32') {
-            execSync('sc start postgresql-x64-18', { stdio: 'ignore' });
-          }
-        } catch (_) {}
-      }
-      if (attempt === maxRetries) {
-        throw error;
-      }
-      console.log(`[HRFLOW_DB] Retrying connection in ${delayMs / 1000}s (attempt ${attempt + 1}/${maxRetries})...`);
-      await new Promise(resolve => setTimeout(resolve, delayMs));
+      outboxPublisher.start(2000);
+    } catch (pubErr) {
+      console.warn('⚠️ [OUTBOX] Outbox publisher warning:', pubErr.message);
     }
+  } catch (error) {
+    if (process.platform === 'win32') {
+      try {
+        console.log('[HRFLOW_DB] Attempting local PostgreSQL service recovery...');
+        execSync('sc start postgresql-x64-18', { stdio: 'ignore' });
+        await new Promise(r => setTimeout(r, 1500));
+        await prisma.$connect();
+        console.log('✅ [HRFLOW_DB] Reconnected to PostgreSQL (hrflow_db) after service start.');
+        outboxPublisher.start(2000);
+        return;
+      } catch (_) {}
+    }
+    console.warn('⚠️ [HRFLOW_DB] Database connection warning:', error.message);
+    console.warn('👉 Ensure your PostgreSQL database is running and DATABASE_URL is reachable.');
   }
 }
 
 async function startServer() {
   try {
-    // Verify database connection with auto-heal retry
-    await ensureDatabaseConnected();
-
-    // Start background transactional outbox publisher
-    outboxPublisher.start(2000);
-
-    const server = app.listen(PORT, () => {
-      console.log(`HRFlow Backend Server running on http://localhost:${PORT}`);
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 [HRFLOW_API] Server listening on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+      // Connect to database in background so Render port check passes immediately
+      checkDatabaseConnection();
     }).on('error', (err) => {
       if (err.code === 'EADDRINUSE') {
         console.log(`[HRFLOW_API] Port ${PORT} is already in use by an active instance.`);
       } else {
-        throw err;
+        console.error('Failed to start server:', err);
+        process.exit(1);
       }
     });
   } catch (error) {

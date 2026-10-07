@@ -75,12 +75,15 @@ app.use(errorHandler);
 
 let serverInstance = null;
 if (process.env.NODE_ENV !== 'test') {
-  serverInstance = app.listen(ENV.PORT, () => {
+  serverInstance = app.listen(ENV.PORT, '0.0.0.0', () => {
     console.log(`[MAINTLY_API] Server running on port ${ENV.PORT} [${ENV.NODE_ENV}]`);
-    console.log(`[MAINTLY_API] Connected to PostgreSQL 18 on port 5433`);
 
-    // Start background RabbitMQ employee sync consumer
-    eventConsumer.start();
+    // Start background RabbitMQ employee sync consumer safely
+    try {
+      eventConsumer.start();
+    } catch (e) {
+      console.warn('⚠️ [EVENT_CONSUMER] Consumer warning:', e.message);
+    }
   }).on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
       console.log(`[MAINTLY_API] Port ${ENV.PORT} is already in use by active instance; tests can run against active server.`);

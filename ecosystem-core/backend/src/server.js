@@ -14,7 +14,7 @@ async function startServer() {
       console.warn('⚠️ [ECOSYSTEM_CORE] Database connection warning:', dbErr.message);
     }
 
-    serverInstance = app.listen(ENV.PORT, () => {
+    serverInstance = app.listen(ENV.PORT, '0.0.0.0', () => {
       console.log(`🚀 [ECOSYSTEM_CORE] Central Platform API running on http://localhost:${ENV.PORT} [${ENV.NODE_ENV}]`);
     }).on('error', (err) => {
       if (err.code === 'EADDRINUSE') {
