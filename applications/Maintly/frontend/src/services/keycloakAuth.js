@@ -4,10 +4,10 @@
  * Client: maintly-web
  */
 
-const KEYCLOAK_URL = 'http://localhost:8080';
-const REALM = 'automobile-ecosystem';
-const CLIENT_ID = 'maintly-web';
-const REDIRECT_URI = 'http://localhost:3002/callback';
+const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL || 'http://localhost:8080';
+const REALM = import.meta.env.VITE_KEYCLOAK_REALM || 'automobile-ecosystem';
+const CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'maintly-web';
+const REDIRECT_URI = typeof window !== 'undefined' ? `${window.location.origin}/callback` : 'http://localhost:3002/callback';
 
 function base64UrlEncode(arrayBuffer) {
   const bytes = new Uint8Array(arrayBuffer);

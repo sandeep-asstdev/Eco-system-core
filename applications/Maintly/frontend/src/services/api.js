@@ -19,7 +19,7 @@ export const clearAuthToken = () => {
 export const getAuthToken = () => inMemoryToken || localStorage.getItem('maintly_token');
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: {
     'Content-Type': 'application/json'
   }

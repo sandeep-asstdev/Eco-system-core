@@ -1,8 +1,8 @@
 import { api } from './api.js';
 
-const KEYCLOAK_URL = 'http://localhost:8080';
-const REALM = 'automobile-ecosystem';
-const CLIENT_ID = 'ecosystem-portal';
+const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL || 'http://localhost:8080';
+const REALM = import.meta.env.VITE_KEYCLOAK_REALM || 'automobile-ecosystem';
+const CLIENT_ID = import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'ecosystem-portal';
 const REDIRECT_URI = `${window.location.origin}/callback`;
 
 function base64UrlEncode(buffer) {
