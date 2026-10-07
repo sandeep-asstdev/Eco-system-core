@@ -8,6 +8,7 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "build": "prisma generate",
+    "postinstall": "npm --prefix ../../packages/ecosystem-sdk install --omit=dev 2>/dev/null || true",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "node prisma/seed.js",
@@ -16,6 +17,7 @@
   "dependencies": {
     "@automobile-ecosystem/sdk": "file:../../packages/ecosystem-sdk",
     "@prisma/client": "^5.22.0",
+    "amqplib": "^2.0.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

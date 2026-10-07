@@ -1,6 +1,30 @@
-import jwt from 'jsonwebtoken';
-import jwksRsa from 'jwks-rsa';
+import { createRequire } from 'module';
 import { AuthenticationError, ForbiddenError } from '../errors/ecosystemErrors.js';
+
+const require = createRequire(import.meta.url);
+
+function loadModule(name) {
+  try {
+    return require(name);
+  } catch (err) {
+    try {
+      const resolved = require.resolve(name, {
+        paths: [
+          process.cwd(),
+          process.cwd() + '/node_modules',
+          '../../ecosystem-core/backend/node_modules',
+          '../ecosystem-core/backend/node_modules'
+        ]
+      });
+      return require(resolved);
+    } catch (fallbackErr) {
+      throw err;
+    }
+  }
+}
+
+const jwt = loadModule('jsonwebtoken');
+const jwksRsa = loadModule('jwks-rsa');
 
 let jwksClientInstance = null;
 

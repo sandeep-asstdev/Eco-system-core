@@ -1,6 +1,27 @@
-import amqp from 'amqplib';
 import http from 'http';
 import { EventEmitter } from 'events';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+
+let amqp = null;
+try {
+  amqp = require('amqplib');
+} catch (err) {
+  try {
+    const resolved = require.resolve('amqplib', {
+      paths: [
+        process.cwd(),
+        process.cwd() + '/node_modules',
+        '../../ecosystem-core/backend/node_modules',
+        '../ecosystem-core/backend/node_modules'
+      ]
+    });
+    amqp = require(resolved);
+  } catch (fallbackErr) {
+    // amqplib is optional if RabbitMQ is not configured; httpBrokerUrl is fallback
+  }
+}
 
 export class EcosystemEventBus extends EventEmitter {
   constructor(config = {}) {
