@@ -73,58 +73,48 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    setIsLoading(true);
-    try {
-      const data = await authService.directLogin(email, password);
-      setToken(data.token);
-      setUser(data.user);
-      setTenant(data.tenant);
-      setMemberships(data.memberships || []);
-      setRoles(data.roles || []);
-      setPermissions(data.permissions || []);
-      setApplications(data.applications || []);
+    const data = await authService.directLogin(email, password);
+    setToken(data.token);
+    setUser(data.user);
+    setTenant(data.tenant);
+    setMemberships(data.memberships || []);
+    setRoles(data.roles || []);
+    setPermissions(data.permissions || []);
+    setApplications(data.applications || []);
 
-      localStorage.setItem('ecosystem_user', JSON.stringify(data.user));
-      if (data.tenant) {
-        localStorage.setItem('ecosystem_tenant', JSON.stringify(data.tenant));
-      }
-
-      const primary = data.memberships?.find(m => m.isPrimary);
-      if (primary && primary.branch) {
-        setActiveBranch(primary.branch);
-        localStorage.setItem('ecosystem_active_branch', JSON.stringify(primary.branch));
-      } else if (data.memberships?.[0]?.branch) {
-        setActiveBranch(data.memberships[0].branch);
-        localStorage.setItem('ecosystem_active_branch', JSON.stringify(data.memberships[0].branch));
-      }
-
-      return data;
-    } finally {
-      setIsLoading(false);
+    localStorage.setItem('ecosystem_user', JSON.stringify(data.user));
+    if (data.tenant) {
+      localStorage.setItem('ecosystem_tenant', JSON.stringify(data.tenant));
     }
+
+    const primary = data.memberships?.find(m => m.isPrimary);
+    if (primary && primary.branch) {
+      setActiveBranch(primary.branch);
+      localStorage.setItem('ecosystem_active_branch', JSON.stringify(primary.branch));
+    } else if (data.memberships?.[0]?.branch) {
+      setActiveBranch(data.memberships[0].branch);
+      localStorage.setItem('ecosystem_active_branch', JSON.stringify(data.memberships[0].branch));
+    }
+
+    return data;
   };
 
   const signup = async (payload) => {
-    setIsLoading(true);
-    try {
-      const data = await authService.directSignup(payload);
-      setToken(data.token);
-      setUser(data.user);
-      setTenant(data.tenant);
-      setMemberships(data.memberships || []);
-      setRoles(data.roles || []);
-      setPermissions(data.permissions || []);
-      setApplications(data.applications || []);
+    const data = await authService.directSignup(payload);
+    setToken(data.token);
+    setUser(data.user);
+    setTenant(data.tenant);
+    setMemberships(data.memberships || []);
+    setRoles(data.roles || []);
+    setPermissions(data.permissions || []);
+    setApplications(data.applications || []);
 
-      localStorage.setItem('ecosystem_user', JSON.stringify(data.user));
-      if (data.tenant) {
-        localStorage.setItem('ecosystem_tenant', JSON.stringify(data.tenant));
-      }
-
-      return data;
-    } finally {
-      setIsLoading(false);
+    localStorage.setItem('ecosystem_user', JSON.stringify(data.user));
+    if (data.tenant) {
+      localStorage.setItem('ecosystem_tenant', JSON.stringify(data.tenant));
     }
+
+    return data;
   };
 
   const loginWithKeycloak = () => {

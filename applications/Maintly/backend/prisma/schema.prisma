@@ -1,0 +1,1055 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PLATFORM_ADMIN
+  TENANT_ADMIN
+  MANAGER
+  APPROVER
+  MAINTENANCE_USER
+  PURCHASE_USER
+  EMPLOYEE
+}
+
+enum TenantStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ApprovalStatus {
+  NOT_REQUIRED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum WorkStatus {
+  NEW
+  WAITING_FOR_APPROVAL
+  APPROVED
+  REJECTED
+  ASSIGNED
+  IN_PROGRESS
+  WAITING_FOR_PURCHASE
+  WAITING_FOR_VENDOR
+  PURCHASE_COMPLETED
+  CORRECTION_DONE
+  WAITING_FOR_CHECK
+  NOT_SATISFACTORY
+  REOPENED
+  COMPLETED
+  CLOSED
+  CANCELLED
+  DRAFT
+  SUBMITTED
+  PENDING_APPROVAL
+}
+
+enum PurchaseStatus {
+  NOT_REQUIRED
+  REQUIRED
+  REQUESTED
+  QUOTED
+  QUOTATION_PENDING
+  APPROVAL_PENDING
+  APPROVED
+  ORDERED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+  COMPLETED
+}
+
+enum AttachmentType {
+  INITIAL_PHOTO
+  WORK_PROGRESS
+  COMPLETION_PHOTO
+  QUOTATION_DOC
+  INVOICE_DOC
+  APPROVAL_DOC
+  DISSATISFACTION_PHOTO
+  OTHER
+}
+
+model Tenant {
+  id                String        @id @default(uuid())
+  centralTenantId   String?
+  name              String
+  slug              String        @unique
+  code              String        @unique
+  logo              String?
+  logoUrl           String?
+  status            TenantStatus  @default(ACTIVE)
+  timezone          String        @default("Asia/Kolkata")
+  requestPrefix     String        @default("MAIN")
+  graceHours        Float         @default(12.0)
+  targetHoursHigh   Float         @default(24.0)
+  targetHoursMedium Float         @default(48.0)
+  targetHoursLow    Float         @default(72.0)
+  approvalRequired  Boolean       @default(true)
+  workflowConfig    Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  brands              Brand[]
+  branches            Branch[]
+  departments         Department[]
+  branchDepartments   BranchDepartment[]
+  branchAreas         BranchArea[]
+  users               User[]
+  maintenanceTypes    MaintenanceType[]
+  vendors             Vendor[]
+  maintenanceRequests MaintenanceRequest[]
+  assignments         MaintenanceRequestAssignment[]
+  statusHistories     MaintenanceRequestStatusHistory[]
+  comments            MaintenanceRequestComment[]
+  materials           MaintenanceRequestMaterial[]
+  attachments         MaintenanceRequestAttachment[]
+  purchaseRequests    PurchaseRequest[]
+  quotations          Quotation[]
+  notifications       Notification[]
+  auditLogs           AuditLog[]
+  settings            Setting[]
+  employeeReferences  EmployeeReference[]
+  assets              Asset[]
+  evidenceItems       MaintenanceEvidence[]
+  followUps           MaintenanceRequestFollowUp[]
+  penalties           MaintenancePenalty[]
+  approvalMatrixRules ApprovalMatrixRule[]
+  pmPlans             PreventiveMaintenancePlan[]
+  pmExecutions        PMExecution[]
+  rcas                RootCauseAnalysis[]
+
+  @@index([centralTenantId])
+  @@map("tenants")
+}
+
+model Brand {
+  id              String    @id @default(uuid())
+  centralBrandId  String?
+  tenantId        String
+  name        String
+  code        String
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branches Branch[]
+  requests MaintenanceRequest[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("brands")
+}
+
+model Branch {
+  id                 String    @id @default(uuid())
+  centralBranchId    String?
+  centralFirmId      String?
+  centralBrandId     String?
+  tenantId           String
+  brandId     String?
+  name        String
+  code        String
+  address     String?
+  city        String?
+  state       String?
+  pincode     String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  brand              Brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  userBranchAccesses UserBranchAccess[]
+  branchDepartments  BranchDepartment[]
+  branchAreas        BranchArea[]
+  requests           MaintenanceRequest[]
+  employeeReferences EmployeeReference[]
+  assets             Asset[]
+  penalties          MaintenancePenalty[]
+  pmPlans            PreventiveMaintenancePlan[]
+  pmExecutions       PMExecution[]
+
+  @@unique([tenantId, code])
+  @@index([centralBranchId])
+  @@index([tenantId])
+  @@index([brandId])
+  @@map("branches")
+}
+
+model Department {
+  id                  String    @id @default(uuid())
+  centralDepartmentId String?
+  tenantId            String
+  name        String
+  code        String
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant            Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branchDepartments BranchDepartment[]
+  requests          MaintenanceRequest[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("departments")
+}
+
+model BranchDepartment {
+  id           String   @id @default(uuid())
+  tenantId     String
+  branchId     String
+  departmentId String
+  createdAt    DateTime @default(now())
+
+  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch     Branch     @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@unique([branchId, departmentId])
+  @@index([tenantId])
+  @@index([branchId])
+  @@index([departmentId])
+  @@map("branch_departments")
+}
+
+model BranchArea {
+  id          String   @id @default(uuid())
+  tenantId    String
+  branchId    String
+  name        String
+  code        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant   Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch   Branch               @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  requests MaintenanceRequest[]
+
+  @@unique([branchId, code])
+  @@index([tenantId])
+  @@index([branchId])
+  @@map("branch_areas")
+}
+
+model User {
+  id            String     @id @default(uuid())
+  centralUserId String?
+  tenantId      String?
+  email        String     @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  role         UserRole   @default(EMPLOYEE)
+  status       UserStatus @default(ACTIVE)
+  avatarUrl    String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  tenant            Tenant?             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branchAccesses    UserBranchAccess[]
+  
+  requestedRequests MaintenanceRequest[] @relation("RequestedBy")
+  assignedRequests  MaintenanceRequest[] @relation("AssignedTo")
+  managedRequests   MaintenanceRequest[] @relation("AssignedBy")
+  approvedRequests  MaintenanceRequest[] @relation("ApprovedBy")
+  rejectedRequests  MaintenanceRequest[] @relation("RejectedBy")
+  dissatisfiedRequests MaintenanceRequest[] @relation("DissatisfiedBy")
+
+  assignmentsMade   MaintenanceRequestAssignment[] @relation("AssignmentAssignedBy")
+  assignmentsReceived MaintenanceRequestAssignment[] @relation("AssignmentAssignedTo")
+
+  statusChanges     MaintenanceRequestStatusHistory[]
+  comments          MaintenanceRequestComment[]
+  materialsAdded    MaintenanceRequestMaterial[]
+  attachments       MaintenanceRequestAttachment[]
+
+  requestedPurchases PurchaseRequest[] @relation("PurchaseRequestedBy")
+  approvedPurchases  PurchaseRequest[] @relation("PurchaseApprovedBy")
+
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  evidenceUploaded  MaintenanceEvidence[]
+  followUpsAssigned MaintenanceRequestFollowUp[] @relation("FollowUpAssignedUser")
+  followUpsCreated  MaintenanceRequestFollowUp[] @relation("FollowUpCreatedBy")
+  penaltiesWaived   MaintenancePenalty[] @relation("PenaltyWaivedBy")
+  pmExecutions      PMExecution[] @relation("PMExecutionTechnician")
+  rcasVerified      RootCauseAnalysis[] @relation("RCAVerifiedBy")
+
+  @@index([centralUserId])
+  @@index([tenantId])
+  @@index([role])
+  @@map("users")
+}
+
+model UserBranchAccess {
+  id        String   @id @default(uuid())
+  userId    String
+  branchId  String
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, branchId])
+  @@index([userId])
+  @@index([branchId])
+  @@map("user_branch_accesses")
+}
+
+model MaintenanceType {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  code        String
+  icon        String?  @default("Wrench")
+  color       String?  @default("#2563eb")
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant   Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  requests MaintenanceRequest[]
+
+  @@unique([tenantId, name])
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([sortOrder])
+  @@map("maintenance_types")
+}
+
+model Vendor {
+  id            String   @id @default(uuid())
+  tenantId      String
+  name          String
+  contactPerson String?
+  phone         String?
+  email         String?
+  address       String?
+  gstin         String?
+  category      String?
+  isActive      Boolean  @default(true)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  purchaseRequests PurchaseRequest[]
+  quotations       Quotation[]
+  maintenanceRequests MaintenanceRequest[]
+  assets           Asset[]
+
+  @@index([tenantId])
+  @@index([category])
+  @@map("vendors")
+}
+
+model MaintenanceRequest {
+  id                String         @id @default(uuid())
+  requestNumber     String
+  tenantId          String
+  brandId           String?
+  branchId          String
+  departmentId      String
+  maintenanceTypeId String
+  requesterId       String
+  requesterContact  String?
+  
+  branchAreaId      String?
+  areaInBranch      String?
+  location          String
+  subject           String
+  description       String
+  priority          Priority       @default(MEDIUM)
+  requiredDate      DateTime
+  
+  // Approval
+  approvalCopyUrl    String?
+  approvalUploadedAt DateTime?
+  approvalStatus     ApprovalStatus @default(PENDING)
+  approvedById       String?
+  approvedAt         DateTime?
+  rejectedById       String?
+  rejectedAt         DateTime?
+  rejectionReason    String?
+
+  // Assignment
+  branchStatus       String         @default("OPEN")
+  deadline           DateTime?
+  assignedToId       String?
+  assignedById       String?
+  assignedAt         DateTime?
+  assignedToContact  String?
+  managerContact     String?
+  actionPlan         String?
+
+  // Execution
+  correctionDone     String         @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, COMPLETED, NOT_REQUIRED
+  correctionAt       DateTime?
+  workStatus         WorkStatus     @default(WAITING_FOR_APPROVAL)
+  currentStatus      String         @default("WAITING_FOR_APPROVAL")
+  statusUpdatedById  String?
+  statusUpdatedAt    DateTime?
+  checkedOff         Boolean        @default(true)
+  branchRemarks      String?
+  completionRemarks  String?
+
+  // Purchase
+  purchaseRemarks    String?
+  purchaseStatus     String         @default("NOT_REQUIRED")
+  purchaseStatusAt   DateTime?
+
+  // Satisfaction Verification
+  isDissatisfied        Boolean     @default(false)
+  dissatisfactionReason String?
+  dissatisfiedAt        DateTime?
+  dissatisfiedById      String?
+
+  // SLA & Timers
+  timeToAssignMinutes   Int?
+  targetHours           Float?
+  actualTimeHours       Float?
+  graceHours            Float?      @default(12.0)
+  differenceHours       Float?
+  slaClassification     String?     // ON_TIME, WITHIN_GRACE, OVERDUE
+
+  startedAt         DateTime?
+  completedAt       DateTime?
+  closedAt          DateTime?
+
+  estimatedCost     Float          @default(0.0)
+  actualCost        Float          @default(0.0)
+  approvedCost      Float          @default(0.0)
+  labourHours       Float          @default(0.0)
+  labourCost        Float          @default(0.0)
+  partsCost         Float          @default(0.0)
+  vendorCost        Float          @default(0.0)
+  otherCost         Float          @default(0.0)
+
+  // Penalty Engine for Deadline Breach
+  penaltyAmount        Float      @default(0.0)
+  penaltyWaived        Boolean    @default(false)
+  penaltyWaiverReason  String?
+  penaltyStatus        String     @default("NONE") // NONE, ACCRUING, WAIVED, BILLED, PAID
+  penaltyHourlyRate    Float      @default(250.0)
+  penaltyCalculatedAt  DateTime?
+
+  // Repeat Failure Detection
+  repeatFailureDetected Boolean   @default(false)
+  repeatFailureCount    Int       @default(0)
+
+  // Asset Association
+  assetId           String?
+
+  // Invoice & Payment Workflow
+  invoiceNumber         String?
+  invoiceDate           DateTime?
+  invoiceAmount         Float?
+  invoiceUrl            String?
+  invoiceRemarks        String?
+  
+  paymentStatus         String         @default("NOT_REQUIRED") // NOT_REQUIRED, PENDING, PAID
+  paymentDate           DateTime?
+  paymentAmount         Float?
+  paymentMethod         String?        // CASH, BANK_TRANSFER, UPI, CHEQUE, OTHER
+  paymentProofUrl       String?
+  paymentRemarks        String?
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  tenant            Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  brand             Brand?          @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  branch            Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  department        Department      @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  branchArea        BranchArea?     @relation(fields: [branchAreaId], references: [id], onDelete: SetNull)
+  maintenanceType   MaintenanceType @relation(fields: [maintenanceTypeId], references: [id], onDelete: Cascade)
+  requester         User            @relation("RequestedBy", fields: [requesterId], references: [id], onDelete: Cascade)
+  assignedTo        User?           @relation("AssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  assignedBy        User?           @relation("AssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+  approvedBy        User?           @relation("ApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  rejectedBy        User?           @relation("RejectedBy", fields: [rejectedById], references: [id], onDelete: SetNull)
+  dissatisfiedBy    User?           @relation("DissatisfiedBy", fields: [dissatisfiedById], references: [id], onDelete: SetNull)
+
+  // Third-Party Vendor Assignment (Separate from internal employees)
+  vendorId              String?
+  vendorScope           String?
+  vendorQuotationRef    String?
+  vendorServiceDate     DateTime?
+  vendorStatus          String?     // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+  vendorCompletionNotes String?
+  vendor                Vendor?     @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+
+  assignments       MaintenanceRequestAssignment[]
+  statusHistories   MaintenanceRequestStatusHistory[]
+  comments          MaintenanceRequestComment[]
+  materials         MaintenanceRequestMaterial[]
+  attachments       MaintenanceRequestAttachment[]
+  purchaseRequests  PurchaseRequest[]
+  asset             Asset?                         @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  evidenceItems     MaintenanceEvidence[]
+  followUps         MaintenanceRequestFollowUp[]
+  penalties         MaintenancePenalty[]
+  rca               RootCauseAnalysis?
+
+  @@unique([tenantId, requestNumber])
+  @@index([tenantId])
+  @@index([branchId])
+  @@index([departmentId])
+  @@index([maintenanceTypeId])
+  @@index([workStatus])
+  @@index([priority])
+  @@index([deadline])
+  @@index([assignedToId])
+  @@index([requesterId])
+  @@index([createdAt])
+  @@map("maintenance_requests")
+}
+
+model MaintenanceRequestAssignment {
+  id           String    @id @default(uuid())
+  tenantId     String
+  requestId    String
+  assignedToId String
+  assignedById String
+  assignedAt   DateTime  @default(now())
+  notes        String?
+  actionPlan   String?
+  active       Boolean   @default(true)
+
+  tenant     Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  request    MaintenanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  assignedTo User               @relation("AssignmentAssignedTo", fields: [assignedToId], references: [id], onDelete: Cascade)
+  assignedBy User               @relation("AssignmentAssignedBy", fields: [assignedById], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([requestId])
+  @@index([assignedToId])
+  @@map("maintenance_request_assignments")
+}
+
+model MaintenanceRequestStatusHistory {
+  id          String      @id @default(uuid())
+  tenantId    String
+  requestId   String
+  fromStatus  WorkStatus?
+  toStatus    WorkStatus
+  changedById String
+  remarks     String?
+  createdAt   DateTime    @default(now())
+
+  tenant    Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  request   MaintenanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  changedBy User               @relation(fields: [changedById], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([requestId])
+  @@index([createdAt])
+  @@map("maintenance_request_status_histories")
+}
+
+model MaintenanceRequestComment {
+  id         String   @id @default(uuid())
+  tenantId   String
+  requestId  String
+  userId     String
+  comment    String
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  tenant  Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  request MaintenanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  user    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([requestId])
+  @@map("maintenance_request_comments")
+}
+
+model MaintenanceRequestMaterial {
+  id           String   @id @default(uuid())
+  tenantId     String
+  requestId    String
+  materialName String
+  quantity     Float    @default(1.0)
+  unit         String   @default("pcs")
+  unitCost     Float    @default(0.0)
+  totalCost    Float    @default(0.0)
+  addedById    String
+  createdAt    DateTime @default(now())
+
+  tenant  Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  request MaintenanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  addedBy User               @relation(fields: [addedById], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([requestId])
+  @@map("maintenance_request_materials")
+}
+
+model MaintenanceRequestAttachment {
+  id               String         @id @default(uuid())
+  tenantId         String
+  requestId        String
+  originalFilename String
+  storedFilename   String
+  fileUrl          String
+  mimeType         String
+  fileSize         Int
+  attachmentType   AttachmentType @default(INITIAL_PHOTO)
+  uploadedById     String
+  createdAt        DateTime       @default(now())
+
+  tenant     Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  request    MaintenanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  uploadedBy User               @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([requestId])
+  @@map("maintenance_request_attachments")
+}
+
+model PurchaseRequest {
+  id                   String         @id @default(uuid())
+  tenantId             String
+  maintenanceRequestId String
+  prNumber             String
+  status               PurchaseStatus @default(REQUESTED)
+  requestedById        String
+  approvedById         String?
+  vendorId             String?
+  estimatedTotal       Float          @default(0.0)
+  actualTotal          Float          @default(0.0)
+  poReference          String?
+  notes                String?
+  purchaseSource       String         @default("APPROVED_VENDOR") // INTERNAL_STOCK, APPROVED_VENDOR, AMAZON_BUSINESS, FLIPKART, LOCAL_PURCHASE, OTHER_ONLINE, OTHER
+  orderUrl             String?
+  expectedDeliveryDate DateTime?
+  trackingNumber       String?
+  carrier              String?
+  requestedAt          DateTime       @default(now())
+  approvedAt           DateTime?
+  orderedAt            DateTime?
+  receivedAt           DateTime?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  tenant             Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  maintenanceRequest MaintenanceRequest @relation(fields: [maintenanceRequestId], references: [id], onDelete: Cascade)
+  requestedBy        User               @relation("PurchaseRequestedBy", fields: [requestedById], references: [id], onDelete: Cascade)
+  approvedBy         User?              @relation("PurchaseApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  vendor             Vendor?            @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+
+  items      PurchaseItem[]
+  quotations Quotation[]
+
+  @@unique([tenantId, prNumber])
+  @@index([tenantId])
+  @@index([maintenanceRequestId])
+  @@index([status])
+  @@map("purchase_requests")
+}
+
+model PurchaseItem {
+  id                String   @id @default(uuid())
+  purchaseRequestId String
+  itemName          String
+  quantity          Float    @default(1.0)
+  unit              String   @default("pcs")
+  estimatedPrice    Float    @default(0.0)
+  quotedPrice       Float    @default(0.0)
+  actualPrice       Float    @default(0.0)
+  status            String   @default("PENDING")
+  createdAt         DateTime @default(now())
+
+  purchaseRequest PurchaseRequest @relation(fields: [purchaseRequestId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseRequestId])
+  @@map("purchase_items")
+}
+
+model Quotation {
+  id                String   @id @default(uuid())
+  tenantId          String
+  purchaseRequestId String
+  vendorId          String
+  quoteNumber       String
+  amount            Float
+  fileAttachmentId  String?
+  validUntil        DateTime?
+  status            String   @default("PENDING")
+  notes             String?
+  createdAt         DateTime @default(now())
+
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  purchaseRequest PurchaseRequest @relation(fields: [purchaseRequestId], references: [id], onDelete: Cascade)
+  vendor          Vendor          @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([purchaseRequestId])
+  @@index([vendorId])
+  @@map("quotations")
+}
+
+model Notification {
+  id         String    @id @default(uuid())
+  tenantId   String
+  userId     String
+  title      String
+  message    String
+  type       String    @default("INFO")
+  entityType String?
+  entityId   String?
+  isRead     Boolean   @default(false)
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, userId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, entity])
+  @@index([tenantId, createdAt])
+  @@map("audit_logs")
+}
+
+model Setting {
+  id          String   @id @default(uuid())
+  tenantId    String
+  key         String
+  value       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, key])
+  @@index([tenantId])
+  @@map("settings")
+}
+
+model EmployeeReference {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  centralTenantId     String?
+  hrEmployeeId        String?
+  centralUserId       String?
+  centralBranchId     String?
+  employeeCode        String
+  firstName           String
+  lastName            String
+  email               String
+  phone               String?
+  branchId            String?
+  department          String?
+  designation         String?
+  status              String   @default("ACTIVE")
+  syncedAt            DateTime @default(now())
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch Branch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([centralTenantId])
+  @@index([centralBranchId])
+  @@index([email])
+  @@map("employee_references")
+}
+
+model ProcessedEvent {
+  id              String   @id @default(uuid())
+  eventId         String   @unique
+  eventType       String
+  aggregateId     String?
+  centralTenantId String?
+  processedAt     DateTime @default(now())
+  status          String   @default("COMPLETED")
+  errorReason     String?
+
+  @@index([eventId])
+  @@index([centralTenantId])
+  @@map("processed_events")
+}
+
+model Asset {
+  id                      String    @id @default(uuid())
+  assetCode               String
+  tenantId                String
+  branchId                String
+  brandId                 String?
+  departmentId            String?
+  branchAreaId            String?
+  name                    String
+  category                String    // Hydraulic Lift, Wheel Aligner, Air Compressor, Paint Booth, HVAC Chiller, Generator, Diagnostic Tool
+  manufacturer            String?
+  model                   String?
+  serialNumber            String?
+  location                String    // Bay 1, Service Floor, Paint Shop
+  installationDate        DateTime?
+  warrantyExpiry          DateTime?
+  vendorId                String?
+  status                  String    @default("OPERATIONAL") // OPERATIONAL, DEGRADED, UNDER_MAINTENANCE, BREAKDOWN, RETIRED
+  criticality             String    @default("MEDIUM")      // LOW, MEDIUM, HIGH, CRITICAL
+  maintenanceFrequencyDays Int      @default(30)
+  qrCodeData              String?
+  totalDowntimeHours      Float     @default(0.0)
+  lifetimeMaintenanceCost Float     @default(0.0)
+  riskLevel               String    @default("LOW")         // LOW, MEDIUM, HIGH
+  riskFactors             Json?
+  notes                   String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  tenant   Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch   Branch               @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  vendor   Vendor?              @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  requests MaintenanceRequest[]
+  pmPlans  PreventiveMaintenancePlan[]
+  pmExecutions PMExecution[]
+  rcas     RootCauseAnalysis[]
+
+  @@unique([tenantId, assetCode])
+  @@index([tenantId])
+  @@index([branchId])
+  @@index([category])
+  @@index([status])
+  @@index([criticality])
+  @@map("assets")
+}
+
+model MaintenanceEvidence {
+  id               String   @id @default(uuid())
+  tenantId         String
+  requestId        String
+  stage            String   // BEFORE, DURING, AFTER, VERIFICATION
+  fileUrl          String
+  mediaType        String   @default("PHOTO") // PHOTO, VIDEO, AUDIO, ATTACHMENT
+  filename         String
+  description      String?
+  uploadedById     String
+  uploadedAt       DateTime @default(now())
+
+  tenant     Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  request    MaintenanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  uploadedBy User               @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([requestId])
+  @@index([stage])
+  @@map("maintenance_evidence")
+}
+
+model MaintenanceRequestFollowUp {
+  id               String    @id @default(uuid())
+  tenantId         String
+  requestId        String
+  comment          String
+  assignedUserId   String?
+  createdById      String
+  nextFollowUpDate DateTime
+  status           String    @default("PENDING") // PENDING, COMPLETED, CANCELLED, OVERDUE
+  attachmentUrl    String?
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  tenant       Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  request      MaintenanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  assignedUser User?              @relation("FollowUpAssignedUser", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  createdBy    User               @relation("FollowUpCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([requestId])
+  @@index([nextFollowUpDate])
+  @@index([status])
+  @@map("maintenance_request_follow_ups")
+}
+
+model MaintenancePenalty {
+  id               String    @id @default(uuid())
+  tenantId         String
+  requestId        String
+  branchId         String
+  deadline         DateTime
+  breachHours      Float     @default(0.0)
+  hourlyRate       Float     @default(250.0)
+  totalPenalty     Float     @default(0.0)
+  status           String    @default("ACCRUING") // ACCRUING, INVOICED, WAIVED, PAID
+  waivedById       String?
+  waiverReason     String?
+  waivedAt         DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  tenant   Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  request  MaintenanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  branch   Branch             @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  waivedBy User?              @relation("PenaltyWaivedBy", fields: [waivedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([requestId])
+  @@index([branchId])
+  @@index([status])
+  @@map("maintenance_penalties")
+}
+
+model ApprovalMatrixRule {
+  id                 String   @id @default(uuid())
+  tenantId           String
+  name               String
+  ruleType           String   // COST_THRESHOLD, EMERGENCY_REQUEST, PURCHASE_REQUEST, ASSET_REPLACEMENT, VENDOR_WORK
+  minAmount          Float?
+  maxAmount          Float?
+  approverRole       String   // MAINTENANCE_MANAGER, BRANCH_MANAGER, PURCHASE_MANAGER, FINANCE, REGIONAL_MANAGER, MANAGEMENT
+  priorityEscalation Boolean  @default(false)
+  orderIndex         Int      @default(0)
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([ruleType])
+  @@map("approval_matrix_rules")
+}
+
+model PreventiveMaintenancePlan {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  branchId            String
+  assetId             String?
+  title               String
+  description         String?
+  category            String
+  triggerType         String    @default("FREQUENCY") // FREQUENCY, DATE, USAGE_HOURS, INSPECTION_RESULT
+  frequencyDays       Int       @default(30)
+  meterInterval       Int?
+  lastExecutedAt      DateTime?
+  nextDueDate         DateTime
+  priority            String    @default("MEDIUM")
+  checklistTemplate   Json      // [{ id: 1, text: "Check hydraulic oil pressure", type: "NUMERIC", unit: "bar", min: 2.0, max: 4.5 }, { id: 2, text: "Inspect seals and lines", type: "CHECKBOX" }, ...]
+  assignedToRole      String?   @default("MAINTENANCE_USER")
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  tenant   Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch   Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  asset    Asset?        @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  executions PMExecution[]
+
+  @@index([tenantId])
+  @@index([branchId])
+  @@index([nextDueDate])
+  @@map("preventive_maintenance_plans")
+}
+
+model PMExecution {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  planId             String
+  assetId            String?
+  branchId           String
+  technicianId       String?
+  scheduledDate      DateTime
+  executedDate       DateTime?
+  status             String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, OVERDUE, SKIPPED
+  checklistResults   Json?     // [{ id: 1, passed: true, value: 3.2, notes: "Normal" }, ...]
+  remarks            String?
+  signOffName        String?
+  evidencePhotoUrl   String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  tenant     Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plan       PreventiveMaintenancePlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  asset      Asset?                    @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  branch     Branch                    @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  technician User?                     @relation("PMExecutionTechnician", fields: [technicianId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([planId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@map("pm_executions")
+}
+
+model RootCauseAnalysis {
+  id               String    @id @default(uuid())
+  tenantId         String
+  requestId        String    @unique
+  assetId          String?
+  problemTitle     String
+  symptoms         String
+  possibleCauses   Json      // ["Hydraulic seal wear", "Low fluid level", "Overload"]
+  rootCause        String
+  correctiveAction String
+  preventiveAction String
+  attachments      Json?
+  verifiedById     String?
+  verifiedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  tenant     Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  request    MaintenanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  asset      Asset?             @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  verifiedBy User?              @relation("RCAVerifiedBy", fields: [verifiedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([requestId])
+  @@map("root_cause_analyses")
+}
+

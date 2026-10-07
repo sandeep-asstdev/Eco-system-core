@@ -1,0 +1,23 @@
+{
+  "name": "maintly",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MAINTLY - Internal Maintenance & Operations Management System",
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "db:push": "cd backend && npm run db:push",
+    "db:seed": "cd backend && npm run db:seed",
+    "db:generate": "cd backend && npm run db:generate",
+    "test": "cd backend && npm run test"
+  },
+  "keywords": [
+    "maintenance",
+    "operations",
+    "work-orders",
+    "pern-stack",
+    "postgresql-18"
+  ],
+  "author": "Maintly Core Team",
+  "license": "UNLICENSED"
+}

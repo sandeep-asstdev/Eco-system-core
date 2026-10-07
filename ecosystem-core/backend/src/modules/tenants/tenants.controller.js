@@ -1,5 +1,41 @@
 import prisma from '../../config/db.js';
 import bcrypt from 'bcryptjs';
+import http from 'http';
+
+/**
+ * Propagates newly onboarded canonical tenant identity to subscribed applications
+ */
+async function propagateTenantSync(tenantPayload) {
+  const internalKey = process.env.INTERNAL_SERVICE_KEY || 'ecosystem-internal-service-sync-key';
+  const targets = [
+    { name: 'HRFlow', port: 5000, path: '/api/internal/tenants/sync' },
+    { name: 'MAINTLY', port: 5002, path: '/api/internal/tenants/sync' }
+  ];
+
+  for (const target of targets) {
+    try {
+      const dataStr = JSON.stringify(tenantPayload);
+      const req = http.request({
+        hostname: '127.0.0.1',
+        port: target.port,
+        path: target.path,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(dataStr),
+          'X-Internal-Service-Key': internalKey
+        },
+        timeout: 2000
+      });
+      req.on('error', () => {
+        // Handled silently; JIT sync on first login ensures redundancy
+      });
+      req.write(dataStr);
+      req.end();
+    } catch (_) {}
+  }
+}
+
 
 export async function getTenants(req, res, next) {
   try {
@@ -116,6 +152,14 @@ export async function createTenant(req, res, next) {
       });
     }
 
+    // If explicit tenant code is provided but legalName is missing, reject with validation error
+    if (code && !legalName?.trim() && !req.body.legalEntityName?.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Tenant code, name, and legalName are required.' }
+      });
+    }
+
     const effectiveLegalName = (legalName || req.body.legalEntityName || effectiveName).trim();
     let normalizedCode = (code || req.body.tenantCode || '').toUpperCase().trim();
     if (!normalizedCode) {
@@ -163,17 +207,93 @@ export async function createTenant(req, res, next) {
       }
     });
 
-    // Auto-subscribe to default active applications
+    // Application Subscriptions (Dynamic with central governance)
     const activeApps = await prisma.application.findMany({ where: { isActive: true } });
+    const requestedApps = Array.isArray(req.body.subscribedApps)
+      ? req.body.subscribedApps.map((a) => a.toLowerCase().trim())
+      : null;
+
     for (const app of activeApps) {
+      const appKey = (app.appKey || app.code || '').toLowerCase();
+      const shouldEnable = requestedApps ? requestedApps.includes(appKey) : true;
       await prisma.tenantApplication.create({
         data: {
           tenantId: tenant.id,
           applicationId: app.id,
-          status: 'ACTIVE',
-          planName: 'STANDARD'
+          status: shouldEnable ? 'ACTIVE' : 'SUSPENDED',
+          planName: effectiveTier
         }
       });
+    }
+
+    // Provision Firms if provided
+    if (Array.isArray(req.body.firms)) {
+      for (const f of req.body.firms) {
+        if (f.code && f.name) {
+          await prisma.firm.create({
+            data: {
+              tenantId: tenant.id,
+              code: f.code.toUpperCase().trim(),
+              name: f.name.trim(),
+              panNumber: f.panNumber || null,
+              gstin: f.gstin || null
+            }
+          }).catch(() => null);
+        }
+      }
+    }
+
+    // Provision Brands if provided
+    if (Array.isArray(req.body.brands)) {
+      for (const b of req.body.brands) {
+        if (b.code && b.name) {
+          await prisma.brand.create({
+            data: {
+              tenantId: tenant.id,
+              code: b.code.toUpperCase().trim(),
+              name: b.name.trim(),
+              description: b.description || null
+            }
+          }).catch(() => null);
+        }
+      }
+    }
+
+    // Provision Branches if provided
+    if (Array.isArray(req.body.branches)) {
+      for (const br of req.body.branches) {
+        if (br.code && br.name) {
+          let firm = null;
+          if (br.firmCode) {
+            firm = await prisma.firm.findFirst({ where: { tenantId: tenant.id, code: br.firmCode.toUpperCase().trim() } });
+          }
+          if (!firm) {
+            firm = await prisma.firm.findFirst({ where: { tenantId: tenant.id } });
+          }
+          if (!firm) {
+            firm = await prisma.firm.create({
+              data: {
+                tenantId: tenant.id,
+                code: `${tenant.code}_MAIN`,
+                name: `${tenant.name} Main Firm`
+              }
+            });
+          }
+
+          await prisma.branch.create({
+            data: {
+              tenantId: tenant.id,
+              firmId: firm.id,
+              code: br.code.toUpperCase().trim(),
+              name: br.name.trim(),
+              city: br.city || city || 'Hubballi',
+              state: br.state || state || 'Karnataka',
+              outletType: br.outletType || br.type || '3S_FACILITY',
+              active: true
+            }
+          }).catch((err) => console.error('[BRANCH_CREATE_ERR]', err));
+        }
+      }
     }
 
     // Seed Standard 3S Business Units
@@ -213,11 +333,21 @@ export async function createTenant(req, res, next) {
         const passwordHash = await bcrypt.hash(passwordToHash, salt);
         const tenantAdminRole = await prisma.role.findFirst({ where: { code: 'TENANT_ADMIN' } });
 
+        let baseUsername = targetAdminEmail.split('@')[0];
+        const existingUsername = await prisma.user.findUnique({ where: { username: baseUsername } });
+        if (existingUsername) {
+          baseUsername = `${baseUsername}_${normalizedCode.toLowerCase()}`;
+          const existingUsername2 = await prisma.user.findUnique({ where: { username: baseUsername } });
+          if (existingUsername2) {
+            baseUsername = `${baseUsername}_${Math.floor(100 + Math.random() * 899)}`;
+          }
+        }
+
         const adminUser = await prisma.user.create({
           data: {
             tenantId: tenant.id,
             email: targetAdminEmail,
-            username: targetAdminEmail.split('@')[0],
+            username: baseUsername,
             passwordHash,
             firstName: req.body.adminName ? req.body.adminName.split(' ')[0] : (name.split(' ')[0] || 'Dealership'),
             lastName: req.body.adminName ? (req.body.adminName.split(' ').slice(1).join(' ') || 'Admin') : 'Admin',
@@ -238,6 +368,18 @@ export async function createTenant(req, res, next) {
         }
       }
     }
+
+    // Propagate canonical tenant identity to subscribed applications
+    await propagateTenantSync({
+      id: tenant.id,
+      code: tenant.code,
+      name: tenant.name,
+      legalName: tenant.legalName,
+      status: tenant.status,
+      contactEmail: effectiveEmail,
+      contactPhone: effectivePhone,
+      address: addressLine1 || ''
+    });
 
     // Log in audit trail
     await prisma.auditLog.create({
@@ -351,3 +493,119 @@ export async function updateTenantStatus(req, res, next) {
     next(error);
   }
 }
+
+/**
+ * Internal Service Endpoint: Get Canonical Tenant by ID or Code
+ */
+export async function getInternalTenant(req, res, next) {
+  try {
+    const isInternal = req.authMethod === 'INTERNAL_SERVICE';
+    const isPlatformAdmin = Boolean(req.isPlatformAdmin || req.user?.role === 'PLATFORM_ADMIN');
+    if (!isInternal && !isPlatformAdmin) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Access Denied: Internal service authentication or Platform Administrator privileges required.' }
+      });
+    }
+
+    const { id } = req.params;
+    const tenant = await prisma.tenant.findFirst({
+      where: {
+        OR: [
+          { id },
+          { code: id.toUpperCase() }
+        ]
+      },
+      include: {
+        firms: true,
+        brands: true,
+        branches: true,
+        tenantApplications: { include: { application: true } }
+      }
+    });
+
+    if (!tenant) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Tenant not found.' } });
+    }
+
+    res.json({ success: true, data: tenant });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Internal Service Endpoint: Verify application subscription for a tenant
+ */
+export async function getInternalTenantSubscription(req, res, next) {
+  try {
+    const isInternal = req.authMethod === 'INTERNAL_SERVICE';
+    const isPlatformAdmin = Boolean(req.isPlatformAdmin || req.user?.role === 'PLATFORM_ADMIN');
+    if (!isInternal && !isPlatformAdmin) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Access Denied: Internal service authentication or Platform Administrator privileges required.' }
+      });
+    }
+
+    const { id } = req.params;
+    const { appKey } = req.query;
+    if (!appKey) {
+      return res.status(400).json({ success: false, error: { message: 'appKey parameter is required.' } });
+    }
+
+    const tenant = await prisma.tenant.findFirst({
+      where: {
+        OR: [
+          { id },
+          { code: id.toUpperCase() }
+        ]
+      }
+    });
+
+    if (!tenant) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Tenant not found.' } });
+    }
+
+    const targetKey = appKey.toLowerCase().trim();
+    const app = await prisma.application.findFirst({
+      where: {
+        OR: [
+          { appKey: { equals: targetKey, mode: 'insensitive' } },
+          { code: { equals: targetKey, mode: 'insensitive' } }
+        ]
+      }
+    });
+
+    if (!app) {
+      return res.status(404).json({ success: false, error: { code: 'APP_NOT_FOUND', message: `Application '${appKey}' not found.` } });
+    }
+
+    const subscription = await prisma.tenantApplication.findUnique({
+      where: {
+        tenantId_applicationId: {
+          tenantId: tenant.id,
+          applicationId: app.id
+        }
+      }
+    });
+
+    const isSubscribed = Boolean(subscription && subscription.status === 'ACTIVE' && tenant.status === 'ACTIVE');
+
+    res.json({
+      success: true,
+      isSubscribed,
+      status: subscription ? subscription.status : 'NOT_SUBSCRIBED',
+      tenant: {
+        id: tenant.id,
+        code: tenant.code,
+        name: tenant.name,
+        legalName: tenant.legalName,
+        status: tenant.status
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+

@@ -168,7 +168,7 @@ async function populateUserContext(userId, fallbackTenantId, tokenPayload, req, 
     if (user.tenantId && user.tenant && user.tenant.status !== 'ACTIVE') {
       return res.status(403).json({
         success: false,
-        error: { code: 'TENANT_SUSPENDED', message: `Dealership Group (${user.tenant.name}) is ${user.tenant.status.toLowerCase()}.` }
+        error: { code: 'TENANT_SUSPENDED', message: 'Dealership group account has been suspended. Please contact administrator.' }
       });
     }
 

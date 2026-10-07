@@ -502,7 +502,7 @@ export async function getBranchById(req, res, next) {
 export async function createBranch(req, res, next) {
   try {
     const {
-      firmId, firmBrandId, address, city, state, pincode, phone, email, gstin
+      firmId, firmBrandId, brandId, address, city, state, pincode, phone, email, gstin
     } = req.body;
 
     const name = req.body.name?.trim();
@@ -566,12 +566,49 @@ export async function createBranch(req, res, next) {
       finalLocationId = loc.id;
     }
 
+    // Resolve Brand and FirmBrand
+    let finalFirmBrandId = firmBrandId || null;
+    let targetBrandId = brandId || null;
+
+    if (finalFirmBrandId) {
+      const existingFb = await prisma.firmBrand.findUnique({ where: { id: finalFirmBrandId } });
+      if (existingFb) {
+        targetBrandId = existingFb.brandId;
+      } else {
+        // firmBrandId might be a direct Brand UUID
+        const existingBrand = await prisma.brand.findUnique({ where: { id: finalFirmBrandId } });
+        if (existingBrand) {
+          targetBrandId = existingBrand.id;
+          finalFirmBrandId = null;
+        }
+      }
+    }
+
+    // If targetBrandId is known, ensure a FirmBrand link exists for this firm
+    if (targetBrandId && !finalFirmBrandId) {
+      let fbLink = await prisma.firmBrand.findUnique({
+        where: { firmId_brandId: { firmId, brandId: targetBrandId } }
+      });
+      if (!fbLink) {
+        const brandObj = await prisma.brand.findUnique({ where: { id: targetBrandId } });
+        fbLink = await prisma.firmBrand.create({
+          data: {
+            tenantId: effectiveTenantId,
+            firmId,
+            brandId: targetBrandId,
+            dealerAgreementNo: `${firm.code || 'FRM'}-${brandObj?.code || 'BRD'}-DEFAULT`
+          }
+        });
+      }
+      finalFirmBrandId = fbLink.id;
+    }
+
     const branch = await prisma.branch.create({
       data: {
         tenantId: effectiveTenantId,
         firmId,
         locationId: finalLocationId,
-        firmBrandId: firmBrandId || null,
+        firmBrandId: finalFirmBrandId,
         code: normalizedCode,
         name: name.trim(),
         outletType: outletType || '3S_FACILITY',
@@ -586,15 +623,16 @@ export async function createBranch(req, res, next) {
       include: { firm: true, location: true, firmBrand: { include: { brand: true } } }
     });
 
-    // Auto-link primary Brand if firmBrand exists
-    if (branch.firmBrand?.brandId) {
+    // Auto-link primary Brand if firmBrand or targetBrandId exists
+    const primaryBrandId = targetBrandId || branch.firmBrand?.brandId;
+    if (primaryBrandId) {
       await prisma.branchBrand.upsert({
-        where: { branchId_brandId: { branchId: branch.id, brandId: branch.firmBrand.brandId } },
+        where: { branchId_brandId: { branchId: branch.id, brandId: primaryBrandId } },
         update: { isPrimary: true },
         create: {
           tenantId: effectiveTenantId,
           branchId: branch.id,
-          brandId: branch.firmBrand.brandId,
+          brandId: primaryBrandId,
           isPrimary: true
         }
       });
@@ -619,11 +657,12 @@ export async function createBranch(req, res, next) {
 
     // Auto-create standard departments for this branch
     const standardDepts = [
-      { code: 'SALES', name: 'New Car Sales' },
+      { code: 'SALES', name: 'New Vehicle Sales' },
       { code: 'SERVICE', name: 'Mechanical Service' },
       { code: 'BODYSHOP', name: 'Body & Paint Repair' },
       { code: 'SPARES', name: 'Parts & Accessories' },
-      { code: 'ACCOUNTS', name: 'Finance & Cashier' }
+      { code: 'ACCOUNTS', name: 'Finance & Accounts' },
+      { code: 'HR', name: 'Human Resources' }
     ];
     for (const d of standardDepts) {
       await prisma.department.create({

@@ -7,6 +7,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import healthRoutes from './modules/health/health.routes.js';
 import authRoutes from './modules/auth/auth.routes.js';
 import tenantRoutes from './modules/tenants/tenants.routes.js';
+import internalTenantRoutes from './modules/tenants/internalTenants.routes.js';
 import orgRoutes from './modules/org/org.routes.js';
 import userRoutes from './modules/users/users.routes.js';
 import applicationRoutes from './modules/applications/applications.routes.js';
@@ -31,6 +32,7 @@ app.use('/api/v1/health', healthRoutes);
 
 // Core Platform API Routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/internal/tenants', internalTenantRoutes);
 app.use('/api/v1/tenants', tenantRoutes);
 app.use('/api/v1/org', orgRoutes);
 app.use('/api/v1/users', userRoutes);

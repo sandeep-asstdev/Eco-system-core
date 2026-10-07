@@ -13,6 +13,24 @@ export function requirePlatformAdmin(req, res, next) {
   next();
 }
 
+export function requireInternalOrPlatformAdmin(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
+  }
+
+  const isInternal = req.authMethod === 'INTERNAL_SERVICE';
+  const isPlatformAdmin = Boolean(req.isPlatformAdmin || req.user?.role === 'PLATFORM_ADMIN');
+
+  if (!isInternal && !isPlatformAdmin) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'Access Denied: Action requires Internal Service authentication or Platform Administrator privileges.' }
+    });
+  }
+
+  next();
+}
+
 export function requireTenant(req, res, next) {
   if (req.isPlatformAdmin) {
     const targetTenantId = req.headers['x-tenant-id'] || req.query.tenantId;

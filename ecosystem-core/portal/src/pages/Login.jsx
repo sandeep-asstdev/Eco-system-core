@@ -1,23 +1,37 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Car, Lock, Mail, ArrowRight, Shield, AlertCircle, Key } from 'lucide-react';
+import { Car, Lock, Mail, ArrowRight, Shield, AlertCircle, Key, ShieldAlert } from 'lucide-react';
+import Toast from '../components/common/Toast.jsx';
 
 export default function Login({ onNavigate }) {
   const { login, loginWithKeycloak } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const [toastData, setToastData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setToastData(null);
     setIsLoading(true);
     try {
       await login(email, password);
       window.location.href = '/';
     } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      const errorMsg = err.message || 'Invalid email or password.';
+      const isSuspended = err.code === 'TENANT_SUSPENDED' || 
+                          err.code === 'ACCOUNT_SUSPENDED' || 
+                          errorMsg.toLowerCase().includes('suspended') ||
+                          errorMsg.toLowerCase().includes('inactive');
+
+      setError(errorMsg);
+      setToastData({
+        title: isSuspended ? 'Access Denied - Account Suspended' : 'Authentication Failed',
+        message: errorMsg,
+        type: isSuspended ? 'suspended' : 'error'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -27,10 +41,22 @@ export default function Login({ onNavigate }) {
     setEmail(personaEmail);
     setPassword(personaPassword);
     setError(null);
+    setToastData(null);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative">
+      {/* Floating Notification Toast */}
+      {toastData && (
+        <Toast
+          title={toastData.title}
+          message={toastData.message}
+          type={toastData.type}
+          onClose={() => setToastData(null)}
+          duration={6000}
+        />
+      )}
+
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
         {/* Header */}
         <div className="p-8 pb-6 text-center border-b border-slate-100 bg-gradient-to-b from-slate-50 to-white">
@@ -42,13 +68,6 @@ export default function Login({ onNavigate }) {
         </div>
 
         <div className="p-8 pt-6 space-y-6">
-          {error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs text-rose-700">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
-
           {/* Keycloak SSO Button */}
           <div>
             <button
@@ -78,7 +97,10 @@ export default function Login({ onNavigate }) {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError(null);
+                  }}
                   placeholder="name@dealership.com"
                   required
                   className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
@@ -93,13 +115,41 @@ export default function Login({ onNavigate }) {
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error) setError(null);
+                  }}
                   placeholder="••••••••"
                   required
                   className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
               </div>
             </div>
+
+            {/* In-Form Error Alert Box */}
+            {error && (
+              <div 
+                id="login-error-alert"
+                role="alert"
+                className={`p-3.5 rounded-xl border-2 flex items-start gap-3 text-xs shadow-sm ${
+                  error.toLowerCase().includes('suspended')
+                    ? 'bg-amber-50 border-amber-300 text-amber-900'
+                    : 'bg-rose-50 border-rose-300 text-rose-800'
+                }`}
+              >
+                {error.toLowerCase().includes('suspended') ? (
+                  <ShieldAlert className="w-5 h-5 shrink-0 text-amber-600 mt-0.5" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 shrink-0 text-rose-600 mt-0.5" />
+                )}
+                <div className="flex-1">
+                  <p className="font-bold text-slate-900">
+                    {error.toLowerCase().includes('suspended') ? 'Account Suspended' : 'Invalid email or password'}
+                  </p>
+                  <p className="mt-0.5 font-medium leading-relaxed">{error}</p>
+                </div>
+              </div>
+            )}
 
             <button
               type="submit"
@@ -131,18 +181,6 @@ export default function Login({ onNavigate }) {
               Quick Test Personas
             </p>
             <div className="grid grid-cols-1 gap-1.5">
-              <button
-                type="button"
-                onClick={() => setPersona('hello@gmail.com', 'Admin@123')}
-                className="text-left p-2 rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition flex items-center justify-between text-xs"
-              >
-                <div>
-                  <div className="font-semibold text-slate-800">Advait Group Admin</div>
-                  <div className="text-[10px] text-slate-500">hello@gmail.com (Advait Motors)</div>
-                </div>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded">ADVAIT_GRP</span>
-              </button>
-
               <button
                 type="button"
                 onClick={() => setPersona('admin@ecosystem.com')}

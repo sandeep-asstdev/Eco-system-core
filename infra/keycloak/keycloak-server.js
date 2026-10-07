@@ -422,6 +422,8 @@ const server = http.createServer(async (req, res) => {
     let user = null;
     let clientId = body.client_id;
     let scope = body.scope || 'openid profile email';
+    let targetTenantId = undefined;
+    let targetTenantCode = undefined;
 
     if (grantType === 'authorization_code') {
       const { code, code_verifier, redirect_uri } = body;
@@ -459,6 +461,8 @@ const server = http.createServer(async (req, res) => {
       user = codeEntry.user;
       clientId = codeEntry.clientId || clientId;
       scope = codeEntry.scope || scope;
+      targetTenantId = codeEntry.targetTenantId;
+      targetTenantCode = codeEntry.targetTenantCode;
       authCodes.delete(code);
     } else if (grantType === 'password') {
       const { username, password } = body;
@@ -523,6 +527,9 @@ const server = http.createServer(async (req, res) => {
       isPrimary: m.isPrimary
     }));
 
+    const effectiveTenantId = (typeof targetTenantId !== 'undefined' ? targetTenantId : user.tenantId);
+    const effectiveTenantCode = (typeof targetTenantCode !== 'undefined' ? targetTenantCode : user.tenant?.code);
+
     const payload = {
       sub: user.id,
       aud: ['account', clientId || 'ecosystem-portal', 'ecosystem-core-api', 'hrflow-api', 'maintly-api'],
@@ -532,7 +539,8 @@ const server = http.createServer(async (req, res) => {
       given_name: user.firstName,
       family_name: user.lastName,
       name: `${user.firstName} ${user.lastName}`.trim(),
-      tenantId: user.tenantId,
+      tenantId: effectiveTenantId,
+      tenant_code: effectiveTenantCode,
       isPlatformAdmin: user.isPlatformAdmin,
       realm_access: { roles },
       resource_access: {
@@ -624,7 +632,7 @@ const server = http.createServer(async (req, res) => {
 
   // 5.6. SSO Launch Endpoint (Central Portal 1-Click Launch Bridge)
   if (pathname === `/realms/${REALM}/protocol/openid-connect/sso-launch` && req.method === 'GET') {
-    const { appKey, token } = parsedUrl.query;
+    const { appKey, token, tenantId: requestedTenantId } = parsedUrl.query;
     if (!token) {
       res.writeHead(400, { 'Content-Type': 'text/html' });
       res.end('<h3>SSO Launch Error: Missing authentication token.</h3>');
@@ -667,11 +675,62 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    const normalizedKey = (appKey || '').toLowerCase();
+
+    // Secure Server-side Tenant Context Resolution & Authorization Verification
+    let targetTenant = null;
+    if (requestedTenantId && requestedTenantId.trim()) {
+      targetTenant = await prisma.tenant.findUnique({
+        where: { id: requestedTenantId.trim() }
+      });
+
+      if (!targetTenant || targetTenant.status !== 'ACTIVE') {
+        res.writeHead(403, { 'Content-Type': 'text/html' });
+        res.end('<h3>SSO Launch Error: 403 Forbidden. Target dealership is inactive or does not exist.</h3>');
+        return;
+      }
+
+      // Security Check: Non-platform users CANNOT spoof or access another tenant
+      if (!user.isPlatformAdmin) {
+        const userHasTenantAccess = (user.tenantId === targetTenant.id) ||
+          (user.memberships || []).some(m => m.branch?.tenantId === targetTenant.id);
+
+        if (!userHasTenantAccess) {
+          res.writeHead(403, { 'Content-Type': 'text/html' });
+          res.end('<h3>SSO Launch Error: 403 Forbidden. User is not authorized to access this dealership.</h3>');
+          return;
+        }
+      }
+    } else {
+      targetTenant = user.tenant || (user.tenantId ? await prisma.tenant.findUnique({ where: { id: user.tenantId } }) : null);
+    }
+
+    // Server-side Subscription Verification
+    if (targetTenant) {
+      const sub = await prisma.tenantApplication.findFirst({
+        where: {
+          tenantId: targetTenant.id,
+          application: {
+            OR: [
+              { appKey: normalizedKey },
+              { code: normalizedKey.toUpperCase() }
+            ]
+          },
+          status: 'ACTIVE'
+        }
+      });
+
+      if (!sub) {
+        res.writeHead(403, { 'Content-Type': 'text/html' });
+        res.end(`<h3>SSO Launch Error: 403 Forbidden. Dealership (${targetTenant.name}) does not have an active subscription for ${normalizedKey.toUpperCase()}.</h3>`);
+        return;
+      }
+    }
+
     // Determine target client and redirect URI
     let targetClientId = 'hrflow-web';
     let targetRedirectUri = 'http://localhost:3001/callback';
 
-    const normalizedKey = (appKey || '').toLowerCase();
     if (normalizedKey === 'maintly') {
       targetClientId = 'maintly-web';
       targetRedirectUri = 'http://localhost:3002/callback';
@@ -690,11 +749,13 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
-    // Generate authorization code for this client
+    // Generate authorization code for this client with verified tenant context
     const code = crypto.randomBytes(32).toString('hex');
     authCodes.set(code, {
       code,
       user,
+      targetTenantId: targetTenant ? targetTenant.id : user.tenantId,
+      targetTenantCode: targetTenant ? targetTenant.code : user.tenant?.code,
       clientId: targetClientId,
       redirectUri: targetRedirectUri,
       scope: 'openid profile email',

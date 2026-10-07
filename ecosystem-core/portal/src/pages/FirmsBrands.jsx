@@ -5,6 +5,7 @@ import { Briefcase, Car, Plus, ShieldCheck, CheckCircle2, Link2, ExternalLink } 
 import LoadingSpinner from '../components/common/LoadingSpinner.jsx';
 import Modal from '../components/common/Modal.jsx';
 import UnauthorizedScreen from '../components/common/UnauthorizedScreen.jsx';
+import Toast from '../components/common/Toast.jsx';
 
 export default function FirmsBrands() {
   const { hasPermission, isPlatformAdmin } = useAuth();
@@ -49,13 +50,14 @@ export default function FirmsBrands() {
   });
 
   const [error, setError] = useState(null);
+  const [toastData, setToastData] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
       const [firmsRes, brandsRes, linksRes] = await Promise.all([
-        api.get('/org/firms'),
+        api.get('/org/firms?limit=100'),
         api.get('/org/brands'),
         api.get('/org/firm-brands')
       ]);
@@ -149,10 +151,20 @@ export default function FirmsBrands() {
       };
       await api.post('/org/firm-brands', payload);
       setIsLinkModalOpen(false);
+      setToastData({
+        title: 'Dealership Agreement Linked',
+        message: `Successfully linked franchise agreement ${payload.dealerAgreementNo || ''} with legal firm.`,
+        type: 'success'
+      });
       setLinkForm({ firmId: '', brandId: '', dealerCode: '', contractValidUntil: '' });
       await fetchData();
     } catch (err) {
       setError(err.message);
+      setToastData({
+        title: 'Franchise Linking Failed',
+        message: err.message,
+        type: 'error'
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -163,7 +175,17 @@ export default function FirmsBrands() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {toastData && (
+        <Toast
+          title={toastData.title}
+          message={toastData.message}
+          type={toastData.type}
+          onClose={() => setToastData(null)}
+          duration={5000}
+        />
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -184,12 +206,20 @@ export default function FirmsBrands() {
           )}
 
           {activeTab === 'brands' && (
-            <button
-              onClick={() => setIsBrandModalOpen(true)}
-              className="inline-flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-sm transition"
-            >
-              <Plus className="w-4 h-4" /> Register OEM Brand
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsLinkModalOpen(true)}
+                className="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition"
+              >
+                <Link2 className="w-4 h-4" /> Bind Dealership Agreement
+              </button>
+              <button
+                onClick={() => setIsBrandModalOpen(true)}
+                className="inline-flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-sm transition"
+              >
+                <Plus className="w-4 h-4" /> Register OEM Brand
+              </button>
+            </div>
           )}
 
           {activeTab === 'franchises' && (
@@ -287,16 +317,32 @@ export default function FirmsBrands() {
           {activeTab === 'brands' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {brands.map((b) => (
-                <div key={b.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div key={b.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between gap-4 hover:border-blue-300 transition">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-700 font-bold text-sm">
-                      <Car className="w-6 h-6 text-slate-600" />
+                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-bold text-sm shrink-0">
+                      <Car className="w-6 h-6 text-blue-600" />
                     </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-sm">{b.name}</h3>
-                      <p className="text-[11px] text-slate-500">{b.oemCompany || 'Automobile OEM'}</p>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-slate-900 text-sm truncate">{b.name}</h3>
+                      <p className="text-[11px] text-slate-500 font-mono">{b.code || 'OEM BRAND'}</p>
                       <span className="text-[10px] text-slate-400">{b.country || 'India'}</span>
                     </div>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[10px] font-semibold text-slate-500">
+                      {firmBrands.filter(fb => fb.brandId === b.id).length} Active Franchises
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLinkForm(prev => ({ ...prev, brandId: b.id }));
+                        setIsLinkModalOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[11px] rounded-lg border border-blue-200 transition"
+                    >
+                      <Link2 className="w-3.5 h-3.5" />
+                      <span>Bind Agreement</span>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -546,49 +592,59 @@ export default function FirmsBrands() {
       </Modal>
 
       {/* Link Franchise Modal */}
-      <Modal isOpen={isLinkModalOpen} onClose={() => setIsLinkModalOpen(false)} title="Link Franchise Agreement">
+      <Modal isOpen={isLinkModalOpen} onClose={() => setIsLinkModalOpen(false)} title="Bind Dealership Agreement / Franchise Link">
         <form onSubmit={handleCreateLink} className="space-y-4 text-xs">
           {error && <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg">{error}</div>}
 
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">Select Legal Firm</label>
+            <label className="block font-semibold text-slate-700 mb-1">Select Legal Operating Firm *</label>
             <select
               required
               value={linkForm.firmId}
               onChange={(e) => setLinkForm({ ...linkForm, firmId: e.target.value })}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">-- Choose Firm --</option>
+              <option value="">-- Choose Operating Firm --</option>
               {firms.map((f) => (
-                <option key={f.id} value={f.id}>{f.name}</option>
+                <option key={f.id} value={f.id}>{f.code ? `${f.code} - ${f.name}` : f.name}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">Select OEM Brand</label>
+            <label className="block font-semibold text-slate-700 mb-1">Select OEM Brand *</label>
             <select
               required
               value={linkForm.brandId}
               onChange={(e) => setLinkForm({ ...linkForm, brandId: e.target.value })}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">-- Choose Brand --</option>
+              <option value="">-- Choose OEM Brand --</option>
               {brands.map((b) => (
-                <option key={b.id} value={b.id}>{b.name}</option>
+                <option key={b.id} value={b.id}>{b.code ? `${b.name} (${b.code})` : b.name}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">OEM Dealer Code</label>
+            <label className="block font-semibold text-slate-700 mb-1">Dealership Agreement Number (Contract Ref) *</label>
             <input
               type="text"
               required
               value={linkForm.dealerCode}
               onChange={(e) => setLinkForm({ ...linkForm, dealerCode: e.target.value })}
-              placeholder="e.g. KIA-IND-1002"
-              className="w-full px-3 py-2 font-mono border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g. DA-HYU-2023-001"
+              className="w-full px-3 py-2 font-mono uppercase border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1">Agreement Expiry / Valid Until (Optional)</label>
+            <input
+              type="date"
+              value={linkForm.contractValidUntil}
+              onChange={(e) => setLinkForm({ ...linkForm, contractValidUntil: e.target.value })}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -605,7 +661,7 @@ export default function FirmsBrands() {
               disabled={isSubmitting}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm disabled:opacity-50"
             >
-              {isSubmitting ? 'Linking...' : 'Establish Franchise'}
+              {isSubmitting ? 'Binding Agreement...' : 'Save Dealership Agreement'}
             </button>
           </div>
         </form>

@@ -1,4 +1,56 @@
+# Dependencies
 node_modules/
+**/node_modules/
+.pnp
+.pnp.js
+
+# Production build outputs
 dist/
-.DS_Store
+**/dist/
+build/
+**/build/
+out/
+**/out/
+.vite/
+**/.vite/
+.cache/
+**/.cache/
+
+# Environment files and credentials
+.env.local
+**/.env.local
+.env.*.local
+**/.env.*.local
+
+# Logs and runtime data
+logs/
+**/logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Editor and OS specific files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Testing and coverage
+coverage/
+**/coverage/
+.nyc_output/
+
+# Uploaded media and temporary directories
+uploads/
+**/uploads/
+storage/
+**/storage/
+temp/
+**/temp/
+tmp/
+**/tmp/
+
+# Sub-repo backups and scratch
+**/.git_backup/
+scratch/

@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Glassmorphism and badge accents */
+.badge-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+/* Dealership Work Order & Job Card Print Styles */
+@media print {
+  @page {
+    margin: 1.2cm;
+    size: auto;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 10.5pt !important;
+  }
+
+  header, aside, nav, button, .no-print {
+    display: none !important;
+  }
+
+  main, .max-w-5xl {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .border, .border-b, .border-t, .border-slate-100, .border-slate-200 {
+    border-color: #cbd5e1 !important;
+  }
+
+  .shadow-xs, .shadow-sm, .shadow-md, .shadow-2xl, .shadow-2xs {
+    box-shadow: none !important;
+  }
+
+  .p-6, .p-5 {
+    break-inside: avoid;
+  }
+}
+

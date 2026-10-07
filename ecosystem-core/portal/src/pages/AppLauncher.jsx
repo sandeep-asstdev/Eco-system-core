@@ -88,7 +88,8 @@ export default function AppLauncher() {
     const token = localStorage.getItem('ecosystem_token');
     const targetKey = (app.appKey || app.code || '').toLowerCase();
     if (token && (targetKey === 'hrflow' || targetKey === 'maintly')) {
-      const ssoUrl = `http://localhost:8080/realms/automobile-ecosystem/protocol/openid-connect/sso-launch?appKey=${targetKey}&token=${encodeURIComponent(token)}`;
+      const tenantParam = tenant?.id ? `&tenantId=${encodeURIComponent(tenant.id)}` : '';
+      const ssoUrl = `http://localhost:8080/realms/automobile-ecosystem/protocol/openid-connect/sso-launch?appKey=${targetKey}&token=${encodeURIComponent(token)}${tenantParam}`;
       window.open(ssoUrl, '_blank', 'noopener,noreferrer');
     } else {
       window.open(app.baseUrl, '_blank', 'noopener,noreferrer');

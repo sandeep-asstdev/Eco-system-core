@@ -5,6 +5,7 @@ import { Building2, Plus, Shield, CheckCircle, XCircle, Search, RefreshCw, Arrow
 import LoadingSpinner from '../components/common/LoadingSpinner.jsx';
 import Modal from '../components/common/Modal.jsx';
 import UnauthorizedScreen from '../components/common/UnauthorizedScreen.jsx';
+import Toast from '../components/common/Toast.jsx';
 
 export default function Tenants({ onNavigate }) {
   const { isPlatformAdmin, hasPermission, switchTenant, tenant: currentTenant } = useAuth();
@@ -23,6 +24,7 @@ export default function Tenants({ onNavigate }) {
     address: ''
   });
   const [error, setError] = useState(null);
+  const [toastData, setToastData] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleEnterDashboard = (targetTenant) => {
@@ -80,6 +82,11 @@ export default function Tenants({ onNavigate }) {
       if (res.success) {
         setIsModalOpen(false);
         setCreatedTenant(res.data);
+        setToastData({
+          title: 'Tenant Onboarded',
+          message: `${res.data.name} (${res.data.code}) onboarded successfully.`,
+          type: 'success'
+        });
         setFormData({
           name: '',
           legalName: '',
@@ -93,6 +100,11 @@ export default function Tenants({ onNavigate }) {
       }
     } catch (err) {
       setError(err.message);
+      setToastData({
+        title: 'Onboarding Failed',
+        message: err.message,
+        type: 'error'
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -102,9 +114,18 @@ export default function Tenants({ onNavigate }) {
     const nextStatus = currentStatus === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
     try {
       await api.put(`/tenants/${id}/status`, { status: nextStatus });
+      setToastData({
+        title: nextStatus === 'SUSPENDED' ? 'Dealership Suspended' : 'Dealership Activated',
+        message: `Dealership status updated to ${nextStatus}. Access ${nextStatus === 'SUSPENDED' ? 'revoked' : 'restored'}.`,
+        type: nextStatus === 'SUSPENDED' ? 'suspended' : 'success'
+      });
       await fetchTenants();
     } catch (err) {
-      alert(`Failed to update tenant status: ${err.message}`);
+      setToastData({
+        title: 'Status Update Failed',
+        message: err.message,
+        type: 'error'
+      });
     }
   };
 
@@ -118,7 +139,16 @@ export default function Tenants({ onNavigate }) {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {toastData && (
+        <Toast
+          title={toastData.title}
+          message={toastData.message}
+          type={toastData.type}
+          onClose={() => setToastData(null)}
+          duration={5000}
+        />
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
